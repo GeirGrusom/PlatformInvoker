@@ -1,16 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Platform.Invoke
 {
-    public class DelegateTypeBuilder
+
+    public interface IDelegateTypeBuilder
     {
+        [Pure]
+        Type CreateDelegateType(MethodInfo method, ModuleBuilder module);
+    }
+
+    /// <summary>
+    /// This class is used to construct a delegate type from a method definition. Attributes are copied as well.
+    /// </summary>
+    [ImmutableObject(true)]
+    public class DelegateTypeBuilder : IDelegateTypeBuilder
+    {
+        [Pure]
         public Type CreateDelegateType(MethodInfo method, ModuleBuilder module)
         {
-            string name = string.Format("{0}Proc", method.Name);
+            var name = string.Format("{0}Proc", method.Name);
 
             var oldType = module.GetType(name);
             if (oldType != null)
@@ -19,19 +33,17 @@ namespace Platform.Invoke
             var typeBuilder = module.DefineType(
                 name, TypeAttributes.Sealed | TypeAttributes.Public, typeof(MulticastDelegate));
 
-
             var constructor = typeBuilder.DefineConstructor(
                 MethodAttributes.RTSpecialName | MethodAttributes.HideBySig | MethodAttributes.Public,
                 CallingConventions.Standard, new[] { typeof(object), typeof(IntPtr) });
-            constructor.SetImplementationFlags(MethodImplAttributes.CodeTypeMask);
 
-            var parameters = method.GetParameters();
+            constructor.SetImplementationFlags(MethodImplAttributes.CodeTypeMask);
 
             var invokeMethod = typeBuilder.DefineMethod(
                 "Invoke",
                 MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.Public,
                 method.ReturnType,
-                parameters.Select(p => p.ParameterType).ToArray());
+                method.GetParameters().Select(p => p.ParameterType).ToArray());
 
             invokeMethod.SetImplementationFlags(MethodImplAttributes.CodeTypeMask);
 
@@ -62,21 +74,21 @@ namespace Platform.Invoke
                 // this will make it unable to locate the type (since without assembly specification, it will look in the dynamic assembly)
                 // Therefore we have to remove MarshalType if both MarshalType and MarshalTypeRef is set.
                 var namedArguments = FixMarshalTypeAttributes(attrib.NamedArguments).ToArray();
-
-                builder.SetCustomAttribute(
-                    new CustomAttributeBuilder(
-                        attrib.Constructor,
-                        attrib.ConstructorArguments.Select(a => a.Value).ToArray(),
-                        attrib.NamedArguments.Where(a => !a.IsField)
-                            .Select(s => s.MemberInfo)
-                            .OfType<PropertyInfo>()
-                            .ToArray(),
-                        attrib.NamedArguments.Where(a => !a.IsField)
-                            .Select(s => s.TypedValue)
-                            .Select(s => s.Value)
-                            .ToArray(),
-                        namedArguments.Where(a => a.IsField).Select(s => s.MemberInfo).OfType<FieldInfo>().ToArray(),
-                        namedArguments.Where(a => a.IsField).Select(s => s.TypedValue).Select(s => s.Value).ToArray()));
+                var attribBuilder = new CustomAttributeBuilder(
+                    attrib.Constructor,
+                    attrib.ConstructorArguments.Select(a => a.Value).ToArray(),
+                    attrib.NamedArguments.Where(a => !a.IsField)
+                        .Select(s => s.MemberInfo)
+                        .OfType<PropertyInfo>()
+                        .ToArray(),
+                    attrib.NamedArguments.Where(a => !a.IsField)
+                        .Select(s => s.TypedValue)
+                        .Select(s => s.Value)
+                        .ToArray(),
+                    namedArguments.Where(a => a.IsField).Select(s => s.MemberInfo).OfType<FieldInfo>().ToArray(),
+                    namedArguments.Where(a => a.IsField).Select(s => s.TypedValue).Select(s => s.Value).ToArray());
+                
+                builder.SetCustomAttribute(attribBuilder);
             }
         }
 

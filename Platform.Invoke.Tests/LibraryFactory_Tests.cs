@@ -11,9 +11,9 @@ namespace Platform.Invoke.Tests
     [TestFixture]
     public class LibraryFactory_Tests
     {
-        [TestCase(PlatformID.Win32S)]
-        [TestCase(PlatformID.Win32Windows)]
-        [TestCase(PlatformID.WinCE)]
+        [TestCase(PlatformID.Win32S)] // No plans for support.
+        [TestCase(PlatformID.Win32Windows)] // No plans for support.
+        [TestCase(PlatformID.WinCE)] // No plans for support.
         [TestCase(PlatformID.MacOSX)]
         [TestCase(PlatformID.Unix)]
         public void Platform_Unsupported(PlatformID platform)
