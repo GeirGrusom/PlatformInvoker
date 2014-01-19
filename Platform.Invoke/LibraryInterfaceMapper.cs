@@ -10,7 +10,6 @@ namespace Platform.Invoke
 {
     public class LibraryInterfaceMapper
     {
-        private readonly AssemblyBuilder assemblyBuilder;
         private readonly ModuleBuilder moduleBuilder;
         private readonly IDelegateTypeBuilder delegateBuilder;
         private readonly IMethodCallWrapper methodWrapper;
@@ -18,7 +17,7 @@ namespace Platform.Invoke
         public LibraryInterfaceMapper(IDelegateTypeBuilder delegateBuilder, IMethodCallWrapper methodWrapper)
         {
             this.delegateBuilder = delegateBuilder;
-            assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("DynamicInterfaces"),
+            AssemblyBuilder assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("DynamicInterfaces"),
                 AssemblyBuilderAccess.Run);
 
             moduleBuilder = assemblyBuilder.DefineDynamicModule("InterfaceMapping");
@@ -35,7 +34,7 @@ namespace Platform.Invoke
             var definedType = moduleBuilder.DefineType(string.Format("{0}_Implementation", typeof(TInterface).Name),
                                          TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class);
 
-            var methods = type.GetMethods().Union(type.GetInterfaces().SelectMany(t => t.GetMethods()));
+            var methods = type.GetMethods().Union(type.GetInterfaces().SelectMany(t => t.GetMethods())).ToArray();
 
             var constructor = definedType.DefineConstructor(
                 MethodAttributes.Public | MethodAttributes.Final,
@@ -69,6 +68,7 @@ namespace Platform.Invoke
             }
             catch (TargetInvocationException ex)
             {
+                // TargetInvocationException is ugly.
                 throw ex.InnerException;
             }
         }
