@@ -33,6 +33,8 @@ namespace Platform.Invoke.Tests
 
         public class MockLibrary : ILibrary
         {
+            public bool Received { get; private set; }
+
             public void Dispose()
             {
                 
@@ -45,11 +47,13 @@ namespace Platform.Invoke.Tests
 
             public Delegate GetProcedure(Type delegateType, string name)
             {
+                Received = true;
                 return new Func<string>(Hello);
             }
 
             public TDelegate GetProcedure<TDelegate>(string name) where TDelegate : class
             {
+                Received = true;
                 return new Func<string>(Hello) as TDelegate;
             }
         }
@@ -60,18 +64,15 @@ namespace Platform.Invoke.Tests
             // Arrange
             var mockDelegateBuilder = Substitute.For<IDelegateTypeBuilder>();
             mockDelegateBuilder.CreateDelegateType(Arg.Any<MethodInfo>(), Arg.Any<ModuleBuilder>()).Returns(typeof(Func<string>));
-
-            var mockLibrary = Substitute.For<ILibrary>();
-            mockLibrary.GetProcedure(Arg.Any<Type>(), Arg.Any<string>()).Returns(new Func<string>(HelloWorld));
-
+            var mockLibrary = new MockLibrary();
             var lib = new LibraryInterfaceMapper(mockDelegateBuilder, new MockMethodWrapper());
 
             // Act
-            var result = lib.Implement<IFoo>(new MockLibrary());
+            var result = lib.Implement<IFoo>(mockLibrary);
 
             // Assert
-            string s = result.DoFoo();
-            Assert.IsInstanceOf<IFoo>(result);
+            Assert.IsTrue(mockLibrary.Received);
         }
+
     }
 }
