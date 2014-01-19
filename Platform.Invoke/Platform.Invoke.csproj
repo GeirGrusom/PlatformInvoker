@@ -43,6 +43,7 @@
     <Compile Include="DelegateTypeBuilder.cs" />
     <Compile Include="LibraryInterfaceMapper.cs" />
     <Compile Include="LibraryLoader.cs" />
+    <Compile Include="MethodCallWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Windows\WindowsLibraryLoader.cs" />
   </ItemGroup>
