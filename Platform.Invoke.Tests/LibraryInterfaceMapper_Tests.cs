@@ -1,0 +1,77 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Text;
+using System.Threading.Tasks;
+using NSubstitute;
+using NUnit.Framework;
+
+namespace Platform.Invoke.Tests
+{
+    [TestFixture]
+    public class LibraryInterfaceMapper_Tests
+    {
+        public interface IFoo
+        {
+            string DoFoo();
+        }
+
+        private static string HelloWorld()
+        {
+            return "Hello World!";
+        }
+
+        private class MockMethodWrapper : IMethodCallWrapper
+        {
+            public void GenerateInvocation(ILGenerator generator, MethodInfo method, IEnumerable<FieldBuilder> fieldBuilders, bool emitReturn = true)
+            {
+                generator.Emit(OpCodes.Ret, "Hello World!");
+            }
+        }
+
+        public class MockLibrary : ILibrary
+        {
+            public void Dispose()
+            {
+                
+            }
+
+            private static string Hello()
+            {
+                return "Hello World";
+            }
+
+            public Delegate GetProcedure(Type delegateType, string name)
+            {
+                return new Func<string>(Hello);
+            }
+
+            public TDelegate GetProcedure<TDelegate>(string name) where TDelegate : class
+            {
+                return new Func<string>(Hello) as TDelegate;
+            }
+        }
+
+        [Test]
+        public void ImplementInterface_Ok()
+        {
+            // Arrange
+            var mockDelegateBuilder = Substitute.For<IDelegateTypeBuilder>();
+            mockDelegateBuilder.CreateDelegateType(Arg.Any<MethodInfo>(), Arg.Any<ModuleBuilder>()).Returns(typeof(Func<string>));
+
+            var mockLibrary = Substitute.For<ILibrary>();
+            mockLibrary.GetProcedure(Arg.Any<Type>(), Arg.Any<string>()).Returns(new Func<string>(HelloWorld));
+
+            var lib = new LibraryInterfaceMapper(mockDelegateBuilder, new MockMethodWrapper());
+
+            // Act
+            var result = lib.Implement<IFoo>(new MockLibrary());
+
+            // Assert
+            string s = result.DoFoo();
+            Assert.IsInstanceOf<IFoo>(result);
+        }
+    }
+}

@@ -8,18 +8,53 @@ using System.Threading.Tasks;
 
 namespace Platform.Invoke
 {
+    public interface IMethodCallWrapper
+    {
+        void GenerateInvocation(ILGenerator generator, MethodInfo method, IEnumerable<FieldBuilder> fieldBuilders, bool emitReturn = true);
+    }
+
+    public class MethodCallWrapper : IMethodCallWrapper
+    {
+        private readonly Func<MethodInfo, string> methodToFieldNameMapper;
+
+        public MethodCallWrapper(Func<MethodInfo, string> methodToFieldNameMapper)
+        {
+            this.methodToFieldNameMapper = methodToFieldNameMapper;
+        }
+
+        
+
+        public void GenerateInvocation(ILGenerator generator, MethodInfo method, IEnumerable<FieldBuilder> fieldBuilders, bool emitReturn = true)
+        {
+            var field = fieldBuilders.First(f => f.Name == methodToFieldNameMapper(method));
+            generator.Emit(OpCodes.Ldarg_0); //  this
+            generator.Emit(OpCodes.Ldfld, field); // MethodNameProc _glMethodName. Initialized by constructor.
+            foreach (var item in method.GetParameters().Select((p, i) => new { Type = p, Index = i }))
+            {
+                generator.Emit(OpCodes.Ldarg, item.Index + 1);
+            }
+            generator.EmitCall(OpCodes.Callvirt, field.FieldType.GetMethod("Invoke"), null);
+            if (emitReturn)
+                generator.Emit(OpCodes.Ret);
+        }    
+    }
+
+
     public class LibraryInterfaceMapper
     {
         private readonly AssemblyBuilder assemblyBuilder;
         private readonly ModuleBuilder moduleBuilder;
         private readonly IDelegateTypeBuilder delegateBuilder;
-        public LibraryInterfaceMapper(IDelegateTypeBuilder delegateBuilder)
+        private readonly IMethodCallWrapper methodWrapper;
+
+        public LibraryInterfaceMapper(IDelegateTypeBuilder delegateBuilder, IMethodCallWrapper methodWrapper)
         {
             this.delegateBuilder = delegateBuilder;
             assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("DynamicInterfaces"),
                 AssemblyBuilderAccess.Run);
 
             moduleBuilder = assemblyBuilder.DefineDynamicModule("InterfaceMapping");
+            this.methodWrapper = methodWrapper;
         }
 
         public TInterface Implement<TInterface>(ILibrary library)
@@ -32,7 +67,7 @@ namespace Platform.Invoke
             var definedType = moduleBuilder.DefineType(string.Format("{0}_Implementation", typeof(TInterface).Name),
                                          TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class);
 
-            var methods = type.GetMethods(BindingFlags.Default);
+            var methods = type.GetMethods().Union(type.GetInterfaces().SelectMany(t => t.GetMethods()));
 
             var constructor = definedType.DefineConstructor(
                 MethodAttributes.Public | MethodAttributes.Final,
@@ -40,20 +75,48 @@ namespace Platform.Invoke
 
             var fields = GenerateFields(methods, moduleBuilder, definedType);
 
-            return null;
+            GenerateConstructor(constructor, methods, fields, "");
+
+            definedType.AddInterfaceImplementation(type);
+
+            foreach (var method in methods)
+            {
+                var newMethod = definedType.DefineMethod
+                    (
+                        method.Name,
+                        MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.Final |
+                        MethodAttributes.HideBySig | MethodAttributes.NewSlot,
+                        method.ReturnType,
+                        method.GetParameters().OrderBy(p => p.Position).Select(t => t.ParameterType).ToArray()
+                    );
+                methodWrapper.GenerateInvocation(newMethod.GetILGenerator(), method, fields);
+                definedType.DefineMethodOverride(newMethod, method);
+            }
+            
+            var result = definedType.CreateType();
+
+            try
+            {
+                return (TInterface) Activator.CreateInstance(result, library);
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
         }
 
         private static void GenerateConstructor(ConstructorBuilder builder, IEnumerable<MethodInfo> methods, IEnumerable<FieldBuilder> fields, string extensionMethodPrefix)
         {
             var generator = builder.GetILGenerator();
             generator.DeclareLocal(typeof(Delegate));
-            var getMethod = typeof(ILibrary).GetMethod("GetProcedure", new[] { typeof(string), typeof(Type) });
+            var getMethod = typeof(ILibrary).GetMethod("GetProcedure", new[] { typeof(Type), typeof(string) });
             var notSupportedConstructor = typeof(MissingMethodException).GetConstructor(
-                new[] { typeof(string), typeof(string) });
+                new[] { typeof(string) });
             if (notSupportedConstructor == null) // Constructor required. Added to make unit tests fail if it is missing.
-                throw new MissingMethodException("ExtensionNotSupportedException", ".ctr(string)");
+                throw new MissingMethodException("MissingMethodException", ".ctr(string)");
 
             var fieldBuilders = fields as FieldBuilder[] ?? fields.ToArray();
+
             foreach (var method in methods)
             {
                 string methodName = (extensionMethodPrefix ?? "") + method.Name;
@@ -69,7 +132,7 @@ namespace Platform.Invoke
                 generator.EmitCall(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }), null);
                 generator.EmitCall(OpCodes.Callvirt, getMethod, null);
                 generator.Emit(OpCodes.Stloc_0); // result = GetProcedure("MethodName", Type);
-                // if result == null throw ExtensionNotSupportedException
+                // if result == null throw MethodNotSupportedException
                 generator.Emit(OpCodes.Ldloc_0);
                 generator.Emit(OpCodes.Brtrue, okLabel);
                 generator.Emit(OpCodes.Ldstr, methodName);
