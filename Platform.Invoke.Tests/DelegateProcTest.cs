@@ -6,14 +6,14 @@ namespace Platform.Invoke.Tests
     {
         public DelegateProcTest()
         {
-            _foo = () => "Hello World!";
+            _foo = (s) => "Hello" + s + " World!";
         }
 
-        private readonly Func<string> _foo;
+        private readonly Func<string, string> _foo;
 
-        public string Foo()
+        public string Foo(string argument)
         {
-            return _foo();
+            return _foo(argument);
         }
     }
 }

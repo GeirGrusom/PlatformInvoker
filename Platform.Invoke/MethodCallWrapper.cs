@@ -23,19 +23,29 @@ namespace Platform.Invoke
         public void GenerateInvocation(ILGenerator generator, MethodInfo method, IEnumerable<FieldBuilder> fieldBuilders, bool emitReturn = true)
         {
             var field = fieldBuilders.First(f => f.Name == methodToFieldNameMapper(method));
-            var local = generator.DeclareLocal(method.ReturnType);
-            var jump = generator.DefineLabel();
+            var parameters = method.GetParameters();
+
             generator.Emit(OpCodes.Nop);
             generator.Emit(OpCodes.Ldarg_0); //  this
             generator.Emit(OpCodes.Ldfld, field); // MethodNameProc _glMethodName. Initialized by constructor.
-            foreach (var item in method.GetParameters().Select((p, i) => new { Type = p, Index = i }))
+            foreach (var item in parameters.Select((p, i) => new { Type = p, Index = i }))
             {
                 generator.Emit(OpCodes.Ldarg, item.Index + 1);
             }
+            
             generator.EmitCall(OpCodes.Callvirt, field.FieldType.GetMethod("Invoke"), null);
-            generator.Emit(OpCodes.Stloc, local.LocalIndex);
-            generator.Emit(OpCodes.Br_S, jump);
-            generator.MarkLabel(jump);
+
+            if (method.ReturnType != typeof(void) && method.GetParameters().Length == 0)
+            {
+                LocalBuilder local = generator.DeclareLocal(method.ReturnType);
+                Label jump = generator.DefineLabel();
+
+                generator.Emit(OpCodes.Stloc, local);
+                    // Without this, the code fails on the 32-bit JIT compiler.
+                generator.Emit(OpCodes.Br_S, jump);
+                generator.MarkLabel(jump);
+                //generator.Emit(OpCodes.Ldloc, local);
+            }
             if (emitReturn)
                 generator.Emit(OpCodes.Ret);
         }    
