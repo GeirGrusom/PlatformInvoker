@@ -43,6 +43,8 @@ namespace Platform.Invoke
                         overrideMethod.GetParameters().OrderBy(p => p.Position).Select(t => t.ParameterType).ToArray()
                     );
 
+            result.SetImplementationFlags(MethodImplAttributes.AggressiveInlining);
+
             var generator = result.GetILGenerator();
 
             var field = fieldBuilders.First(f => f.Name == methodToFieldNameMapper(overrideMethod));
