@@ -11,13 +11,26 @@ namespace Platform.Invoke
     {
         ConstructorBuilder GenerateConstructor(TypeBuilder owner,
             IEnumerable<MethodInfo> methods,
-            IEnumerable<FieldBuilder> fields,
-            string extensionMethodPrefix);
+            IEnumerable<FieldBuilder> fields);
     }
 
     [ImmutableObject(true)]
     public class DefaultConstructorBuilder : IConstructorBuilder
     {
+        private readonly Func<string, string> lookupFunctionName;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lookupFunctionName">Supplies a function lookup name transformation. Set this to null to use the method name verbatim.</param>
+        public DefaultConstructorBuilder(Func<string, string> lookupFunctionName)
+        {
+            if (lookupFunctionName == null)
+                this.lookupFunctionName = s => s;
+            else
+                this.lookupFunctionName = lookupFunctionName;
+        }
+
 
         protected virtual ConstructorBuilder DefineConstructor(TypeBuilder owner)
         {
@@ -39,7 +52,7 @@ namespace Platform.Invoke
             
         }
 
-        public ConstructorBuilder GenerateConstructor(TypeBuilder owner, IEnumerable<MethodInfo> methods, IEnumerable<FieldBuilder> fields, string extensionMethodPrefix)
+        public ConstructorBuilder GenerateConstructor(TypeBuilder owner, IEnumerable<MethodInfo> methods, IEnumerable<FieldBuilder> fields)
         {
             var builder = DefineConstructor(owner);
 
@@ -50,7 +63,7 @@ namespace Platform.Invoke
 
             if (notSupportedConstructor == null)
                 throw new MissingMethodException("MissingMethodException", ".ctr(string)");
-
+            var loc = generator.DeclareLocal(typeof(Delegate));
             var fieldBuilders = fields as FieldBuilder[] ?? fields.ToArray();
 
             EmitBegin(owner, generator);
@@ -59,12 +72,10 @@ namespace Platform.Invoke
             {
                 generator.BeginScope();
                 
-                string methodName = (extensionMethodPrefix ?? "") + method.Name;
+                string methodName = lookupFunctionName(method.Name);
                 var name = LibraryInterfaceMapper.GetFieldNameForMethodInfo(method);
                 var field = fieldBuilders.Single(f => f.Name == name);
                 var okLabel = generator.DefineLabel();
-
-                var loc = generator.DeclareLocal(field.FieldType);
 
                 generator.Emit(OpCodes.Ldarg_1); // ILibrary
                 generator.Emit(OpCodes.Ldstr, methodName);  // load constant method name

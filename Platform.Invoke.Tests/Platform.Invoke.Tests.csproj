@@ -50,7 +50,7 @@
     <Compile Include="DelegateTypeBuilder_Tests.cs" />
     <Compile Include="LibraryFactory_Tests.cs" />
     <Compile Include="LibraryInterfaceMapper_Tests.cs" />
-    <Compile Include="MethodCallWrapper_Tests.cs" />
+    <Compile Include="DefaultMethodCallWrapper_Tests.cs" />
     <Compile Include="ProbingConstructorBuilder_Tests.cs" />
     <Compile Include="ProbingMethodCallWrapper_Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

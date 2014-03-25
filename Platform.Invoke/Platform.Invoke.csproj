@@ -50,6 +50,7 @@
     <Compile Include="DefaultMethodCallWrapper.cs" />
     <Compile Include="ProbingConstructorBuilder.cs" />
     <Compile Include="ProbingMethodCallWrapper.cs" />
+    <Compile Include="ProcProbe.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Windows\WindowsLibraryLoader.cs" />
   </ItemGroup>

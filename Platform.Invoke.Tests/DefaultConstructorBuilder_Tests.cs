@@ -44,7 +44,7 @@ namespace Platform.Invoke.Tests
         {
             // Arrange
             var type = module.DefineType("ConstructorType", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
-            var builder = new DefaultConstructorBuilder();
+            var builder = new DefaultConstructorBuilder(null);
             var lib = Substitute.For<ILibrary>();
             lib.GetProcedure(typeof(Func<string>), "Foo").Returns(new Func<string>(() => "Hello world!"));
             lib.GetProcedure<Func<string>>("Foo").Returns(() => "Hello world!");
@@ -53,7 +53,7 @@ namespace Platform.Invoke.Tests
             var f = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
             
             // Act
-            var ctor = builder.GenerateConstructor(type, typeof(IFoo).GetMethods(), new[] { f }, "");
+            var ctor = builder.GenerateConstructor(type, typeof(IFoo).GetMethods(), new[] { f });
 
             // Assert
             var result = Activator.CreateInstance(type.CreateType(), lib);
@@ -67,7 +67,7 @@ namespace Platform.Invoke.Tests
         {
             // Arrange
             var type = module.DefineType("ConstructorType_TwoArguments_Ok", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
-            var builder = new DefaultConstructorBuilder();
+            var builder = new DefaultConstructorBuilder(null);
             var lib = Substitute.For<ILibrary>();
             
             lib.GetProcedure<Func<string>>("Foo").Returns(() => "Hello world!");
@@ -78,7 +78,7 @@ namespace Platform.Invoke.Tests
             var bar = type.DefineField("_Bar", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
 
             // Act
-            var ctor = builder.GenerateConstructor(type, typeof(IFooBar).GetMethods(), new[] { foo, bar }, "");
+            var ctor = builder.GenerateConstructor(type, typeof(IFooBar).GetMethods(), new[] { foo, bar });
 
             // Assert
             var result = Activator.CreateInstance(type.CreateType(), lib);

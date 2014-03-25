@@ -32,21 +32,22 @@ namespace Platform.Invoke.Tests
         {
             // Arrange
             var type = module.DefineType("ConstructorType", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
-            var builder = new ProbingConstructorBuilder();
+            var builder = new ProbingConstructorBuilder(null);
             var lib = Substitute.For<ILibrary>();
             var probe = Substitute.For<IMethodCallProbe>();
-
 
             var f = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
 
             // Act
-            var ctor = builder.GenerateConstructor(type, new MethodInfo[0], new[] { f }, "");
+            var ctor = builder.GenerateConstructor(type, new MethodInfo[0], new[] { f });
 
             // Assert
             var result = Activator.CreateInstance(type.CreateType(), lib, probe);
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(probe, result.GetType().GetField("$probe", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
+            var probeField = result.GetType().GetField("$probe", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(probeField);
+            Assert.AreEqual(probe, probeField.GetValue(result));
         }
     }
 }

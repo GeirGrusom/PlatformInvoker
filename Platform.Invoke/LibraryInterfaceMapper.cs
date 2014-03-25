@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -50,7 +51,7 @@ namespace Platform.Invoke
 
             var fields = GenerateFields(methods, moduleBuilder, definedType);
 
-            var constructor = constructorBuilder.GenerateConstructor(definedType, methods, fields, "");
+            var constructor = constructorBuilder.GenerateConstructor(definedType, methods, fields);
 
             definedType.AddInterfaceImplementation(type);
 

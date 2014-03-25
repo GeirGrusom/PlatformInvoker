@@ -76,7 +76,7 @@ namespace Platform.Invoke.Tests
             var mockDelegateBuilder = Substitute.For<IDelegateTypeBuilder>();
             mockDelegateBuilder.CreateDelegateType(Arg.Any<MethodInfo>(), Arg.Any<ModuleBuilder>()).Returns(typeof(Func<string>));
             var mockLibrary = new MockLibrary();
-            var lib = new LibraryInterfaceMapper(mockDelegateBuilder, new DefaultConstructorBuilder(), new MockMethodWrapper());
+            var lib = new LibraryInterfaceMapper(mockDelegateBuilder, new DefaultConstructorBuilder(null), new MockMethodWrapper());
 
 
             // Act

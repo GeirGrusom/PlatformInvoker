@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -5,6 +6,15 @@ namespace Platform.Invoke
 {
     public class ProbingConstructorBuilder : DefaultConstructorBuilder
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lookupFunctionName">Supplies a function lookup name transformation. Set this to null to use the method name verbatim.</param>
+        public ProbingConstructorBuilder(Func<string, string> lookupFunctionName)
+            : base(lookupFunctionName)
+        {
+            
+        }
 
         public FieldBuilder ProbeField { get; private set; }
 
