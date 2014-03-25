@@ -8,7 +8,6 @@ using System.Reflection.Emit;
 
 namespace Platform.Invoke
 {
-
     public interface IDelegateTypeBuilder
     {
         [Pure]

@@ -1,0 +1,52 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Text;
+using System.Threading.Tasks;
+
+using NSubstitute;
+
+using NUnit.Framework;
+
+namespace Platform.Invoke.Tests
+{
+    [TestFixture]
+    public class ProbingConstructorBuilder_Tests
+    {
+
+        private AssemblyBuilder assembly;
+        private ModuleBuilder module;
+
+        [TestFixtureSetUp]
+        public void Setup()
+        {
+            assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("TestAssembly"),
+                AssemblyBuilderAccess.RunAndCollect);
+            module = assembly.DefineDynamicModule("TestModule", emitSymbolInfo: true);
+        }
+
+        [Test]
+        public void GeneratesConstructor_Ok()
+        {
+            // Arrange
+            var type = module.DefineType("ConstructorType", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
+            var builder = new ProbingConstructorBuilder();
+            var lib = Substitute.For<ILibrary>();
+            var probe = Substitute.For<IMethodCallProbe>();
+
+
+            var f = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
+
+            // Act
+            var ctor = builder.GenerateConstructor(type, new MethodInfo[0], new[] { f }, "");
+
+            // Assert
+            var result = Activator.CreateInstance(type.CreateType(), lib, probe);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(probe, result.GetType().GetField("$probe", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
+        }
+    }
+}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using NSubstitute;
@@ -22,9 +23,22 @@ namespace Platform.Invoke.Tests
 
         private class MockMethodWrapper : IMethodCallWrapper
         {
-            public void GenerateInvocation(ILGenerator generator, MethodInfo method, IEnumerable<FieldBuilder> fieldBuilders, bool emitReturn = true)
+            public MethodBuilder GenerateInvocation(TypeBuilder owner, MethodInfo overrideMethod, IEnumerable<FieldBuilder> fieldBuilders)
             {
-                generator.Emit(OpCodes.Ret, "Hello World!");
+                var result = owner.DefineMethod
+                   (
+                       overrideMethod.Name,
+                       MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.Final |
+                       MethodAttributes.HideBySig | MethodAttributes.NewSlot,
+                       overrideMethod.ReturnType,
+                       overrideMethod.GetParameters().OrderBy(p => p.Position).Select(t => t.ParameterType).ToArray()
+                   );
+
+                var builder = result.GetILGenerator();
+                owner.DefineMethodOverride(result, overrideMethod);
+                builder.Emit(OpCodes.Ldstr, "Hello World!");
+                builder.Emit(OpCodes.Ret);
+                return result;
             }
         }
 
@@ -62,7 +76,8 @@ namespace Platform.Invoke.Tests
             var mockDelegateBuilder = Substitute.For<IDelegateTypeBuilder>();
             mockDelegateBuilder.CreateDelegateType(Arg.Any<MethodInfo>(), Arg.Any<ModuleBuilder>()).Returns(typeof(Func<string>));
             var mockLibrary = new MockLibrary();
-            var lib = new LibraryInterfaceMapper(mockDelegateBuilder, new MockMethodWrapper());
+            var lib = new LibraryInterfaceMapper(mockDelegateBuilder, new DefaultConstructorBuilder(), new MockMethodWrapper());
+
 
             // Act
             var result = lib.Implement<IFoo>(mockLibrary);

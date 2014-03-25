@@ -19,21 +19,18 @@ namespace Platform.Invoke.Tests
         public void Platform_Unsupported(PlatformID platform)
         {
             // Arrange
-            var factory = new LibraryLoaderFactory();
-
             // Act
             // Assert
-            Assert.Catch<PlatformNotSupportedException>(() => factory.Create(platform));
+            Assert.Catch<PlatformNotSupportedException>(() => LibraryLoaderFactory.Create(platform));
         }
 
         [Test]
         public void WindowsPlatform_ReturnsWindowsImplementation()
         {
             // Arrange
-            var factory = new LibraryLoaderFactory();
 
             // Act
-            var result = factory.Create(PlatformID.Win32NT);
+            var result = LibraryLoaderFactory.Create(PlatformID.Win32NT);
 
             // Assert
             Assert.IsInstanceOf<WindowsLibraryLoader>(result);

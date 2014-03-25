@@ -45,8 +45,8 @@ namespace Platform.Invoke.Windows
         Delegate GetDelegateFromFunctionPointer(IntPtr functionPointer, Type delegateType);
     }
 
-    
-    public class LibraryProcProvider : ILibraryProcProvider
+    [ImmutableObject(true)]
+    public sealed class LibraryProcProvider : ILibraryProcProvider
     {
         [DllImport("kernel32")]
         private static extern bool FreeLibrary([In]IntPtr module);
@@ -59,11 +59,21 @@ namespace Platform.Invoke.Windows
             return FreeLibrary(module);
         }
 
+        [Pure]
         public IntPtr GetProc(IntPtr module, string procName)
         {
-            return GetProcAddress(module, procName);
+            IntPtr result = GetProcAddress(module, procName);
+            if (result == IntPtr.Zero)
+            {
+                result = GetProcAddress(module, procName + "A");
+                if (result == IntPtr.Zero)
+                    result = GetProcAddress(module, procName + "W");
+            }
+
+            return result;
         }
 
+        [Pure]
         public Delegate GetDelegateFromFunctionPointer(IntPtr functionPointer, Type delegateType)
         {
             return Marshal.GetDelegateForFunctionPointer(functionPointer, delegateType);
