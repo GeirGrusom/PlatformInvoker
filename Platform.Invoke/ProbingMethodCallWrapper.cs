@@ -8,8 +8,7 @@ namespace Platform.Invoke
     {
         private readonly Func<FieldBuilder> probeField;
 
-        public ProbingMethodCallWrapper(Func<MethodInfo, string> methodToFieldNameMapper, Func<FieldBuilder> probeField) 
-            : base(methodToFieldNameMapper)
+        public ProbingMethodCallWrapper(Func<FieldBuilder> probeField) 
         {
             this.probeField = probeField;
         }

@@ -60,7 +60,7 @@ namespace Platform.Invoke.Tests
             var probeField = type.DefineField("$probe", typeof(IMethodCallProbe), FieldAttributes.Private);
             type.DefineDefaultConstructor(MethodAttributes.Public);
             type.AddInterfaceImplementation(typeof(IFoo));
-            var wrapper = new ProbingMethodCallWrapper(f => "_" + f.Name, () => probeField);
+            var wrapper = new ProbingMethodCallWrapper(() => probeField);
             wrapper.GenerateInvocation(type, typeof(IFoo).GetMethod("Foo"), new[] { foo });
             var resultType = type.CreateType();
             var result = Activator.CreateInstance(resultType);

@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Platform.Invoke
 {
-    public sealed class LibraryInterfaceMapper
+    public interface ILibraryInterfaceMapper
+    {
+        TInterface Implement<TInterface>(ILibrary library, params object[] additionalConstructorArguments)
+            where TInterface : class;
+    }
+
+    public sealed class LibraryInterfaceMapper : ILibraryInterfaceMapper
     {
         private readonly ModuleBuilder moduleBuilder;
         private readonly IDelegateTypeBuilder delegateBuilder;

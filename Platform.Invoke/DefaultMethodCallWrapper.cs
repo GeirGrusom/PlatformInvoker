@@ -13,14 +13,6 @@ namespace Platform.Invoke
 
     public class DefaultMethodCallWrapper : IMethodCallWrapper
     {
-        private readonly Func<MethodInfo, string> methodToFieldNameMapper;
-
-        public DefaultMethodCallWrapper(Func<MethodInfo, string> methodToFieldNameMapper)
-        {
-            this.methodToFieldNameMapper = methodToFieldNameMapper;
-        }
-
-
         protected virtual void OnInvokeBegin(TypeBuilder type, ILGenerator generator, MethodInfo interfaceMethod)
         {
             
@@ -47,7 +39,7 @@ namespace Platform.Invoke
 
             var generator = result.GetILGenerator();
 
-            var field = fieldBuilders.First(f => f.Name == methodToFieldNameMapper(overrideMethod));
+            var field = fieldBuilders.First(f => f.Name == LibraryInterfaceMapper.GetFieldNameForMethodInfo(overrideMethod));
             var parameters = overrideMethod.GetParameters();
             OnInvokeBegin(owner, generator, overrideMethod);
             generator.Emit(OpCodes.Ldarg_0); //  this

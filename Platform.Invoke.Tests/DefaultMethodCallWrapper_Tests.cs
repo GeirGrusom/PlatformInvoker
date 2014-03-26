@@ -54,7 +54,7 @@ namespace Platform.Invoke.Tests
         public void GenerateInvocation_OutParameter_Ok()
         {
             // Arrange
-            var wrapper = new DefaultMethodCallWrapper(f => "_" + f.Name);
+            var wrapper = new DefaultMethodCallWrapper();
             var type = module.DefineType(Guid.NewGuid().ToString());
             type.AddInterfaceImplementation(typeof(IFooWithOutString));
             var fooString = typeof(IFooWithOutString).GetMethod("Foo");
@@ -80,7 +80,7 @@ namespace Platform.Invoke.Tests
         public void GenerateInvocation_NoParameters_Ok()
         {
             // Arrange
-            var wrapper = new DefaultMethodCallWrapper(f => "_" + f.Name);
+            var wrapper = new DefaultMethodCallWrapper();
             var type = module.DefineType("TestType");
             
             var fooMethod = typeof(IFoo).GetMethod("Foo");
@@ -112,7 +112,7 @@ namespace Platform.Invoke.Tests
         public void GenerateInvocation_OneParameters_Ok()
         {
             // Arrange
-            var wrapper = new DefaultMethodCallWrapper(f => "_" + f.Name);
+            var wrapper = new DefaultMethodCallWrapper();
             var type = module.DefineType(Guid.NewGuid().ToString());
             type.AddInterfaceImplementation(typeof(IFooWithString));
             var fooString = typeof(IFooWithString).GetMethod("Foo_WithString");
