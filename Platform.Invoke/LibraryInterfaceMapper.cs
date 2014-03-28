@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -39,27 +41,61 @@ namespace Platform.Invoke
             this.methodWrapper = methodWrapper;
         }
 
+
+        private IEnumerable<Type> GetTypeInterfaces(Type type)
+        {
+            var interf = type.GetInterfaces();
+            return interf.Concat(interf.SelectMany(t => t.GetInterfaces().SelectMany(GetTypeInterfaces)));
+        }
+
+        /// <summary>
+        /// Implements the interface using the speicified library source.
+        /// </summary>
+        /// <typeparam name="TInterface">Interface or abstract class defining the library contract.</typeparam>
+        /// <param name="library">Library to use for implementation.</param>
+        /// <param name="additionalConstructorArguments">Additional constructor arguments may be required by special constructor builders (such as <see cref="ProbingConstructorBuilder"/>).</param>
+        /// <returns>Instance of the interface implementation.</returns>
+        /// <exception cref="ArgumentException">Thrown if TInterface is not an interface of abstract class.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <see cref="library"/> is null.</exception>
+        /// <exception cref="MissingMethodException">Thrown if the specified method could not be located by the library.</exception>
         public TInterface Implement<TInterface>(ILibrary library, params object[] additionalConstructorArguments)
             where TInterface : class
         {
-            var type = typeof (TInterface);
-            if(!type.IsInterface)
-                throw new ArgumentException("TInterface must be a...interface...type...");
+            var type = typeof(TInterface);
+            if(!(type.IsInterface || type.IsAbstract))
+                throw new ArgumentException("TInterface must be a interface or abstract class.");
 
-            var definedType = moduleBuilder.DefineType(string.Format("{0}_Implementation", typeof(TInterface).Name),
-                                         TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class);
+            if(library == null)
+                throw new ArgumentNullException("library");
 
-            var methods = type.GetMethods().Union(type.GetInterfaces().SelectMany(t => t.GetMethods())).ToArray();
+            TypeBuilder definedType;
+            
+            MethodInfo[] methods;
+            if (type.IsInterface)
+            {
+                methods = type.GetMethods().Concat(GetTypeInterfaces(type).SelectMany(x => x.GetMethods())).ToArray();
+                definedType = moduleBuilder.DefineType(string.Format("{0}_Implementation", typeof(TInterface).Name),
+                    TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class);
+                definedType.AddInterfaceImplementation(type);
+            }
+            else
+            {
+                methods =
+                    type.GetMethods()
+                        .Where(m => m.IsAbstract)
+                        .ToArray();
+
+                definedType = moduleBuilder.DefineType(string.Format("{0}_Implementation", typeof(TInterface).Name),
+                                         TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class, typeof(TInterface));
+            }
 
             var fields = GenerateFields(methods, moduleBuilder, definedType);
 
-            var constructor = constructorBuilder.GenerateConstructor(definedType, methods, fields);
-
-            definedType.AddInterfaceImplementation(type);
+            constructorBuilder.GenerateConstructor(definedType, type, methods, fields);
 
             foreach (var method in methods)
             {
-                methodWrapper.GenerateInvocation(definedType, method, fields);
+                methodWrapper.GenerateInvocation(definedType, type, method, fields);
             }
             
             var result = definedType.CreateType();

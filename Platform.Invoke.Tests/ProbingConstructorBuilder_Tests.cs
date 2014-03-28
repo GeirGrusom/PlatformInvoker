@@ -19,6 +19,11 @@ namespace Platform.Invoke.Tests
         private AssemblyBuilder assembly;
         private ModuleBuilder module;
 
+        public interface IFoo
+        {
+            string Foo();
+        }
+
         [TestFixtureSetUp]
         public void Setup()
         {
@@ -32,14 +37,15 @@ namespace Platform.Invoke.Tests
         {
             // Arrange
             var type = module.DefineType("ConstructorType", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
+            
             var builder = new ProbingConstructorBuilder(null);
             var lib = Substitute.For<ILibrary>();
-            var probe = Substitute.For<IMethodCallProbe>();
+            var probe = Substitute.For<IMethodCallProbe<IFoo>>();
 
             var f = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
 
             // Act
-            var ctor = builder.GenerateConstructor(type, new MethodInfo[0], new[] { f });
+            var ctor = builder.GenerateConstructor(type, typeof(IFoo), new MethodInfo[0], new[] { f });
 
             // Assert
             var result = Activator.CreateInstance(type.CreateType(), lib, probe);

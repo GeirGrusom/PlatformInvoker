@@ -33,35 +33,20 @@ namespace Platform.Invoke.Tests
             return "Hello World!";
         }
 
-
-        public class MyProbe : IMethodCallProbe
-        {
-            public void OnBeginInvoke(MethodInfo method)
-            {
-                throw new NotImplementedException();
-            }
-
-
-            public void OnEndInvoke(MethodInfo method)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         [Test]
         public void InvokesBegin()
         {
             // Arrange
-            var probe = Substitute.For<IMethodCallProbe>();
+            var probe = Substitute.For<IMethodCallProbe<IFoo>>();
 
             // Setup mock type builder
             var type = module.DefineType("TestType");
             var foo = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private);
-            var probeField = type.DefineField("$probe", typeof(IMethodCallProbe), FieldAttributes.Private);
+            var probeField = type.DefineField("$probe", typeof(IMethodCallProbe<IFoo>), FieldAttributes.Private);
             type.DefineDefaultConstructor(MethodAttributes.Public);
             type.AddInterfaceImplementation(typeof(IFoo));
             var wrapper = new ProbingMethodCallWrapper(() => probeField);
-            wrapper.GenerateInvocation(type, typeof(IFoo).GetMethod("Foo"), new[] { foo });
+            wrapper.GenerateInvocation(type, typeof(IFoo), typeof(IFoo).GetMethod("Foo"), new[] { foo });
             var resultType = type.CreateType();
             var result = Activator.CreateInstance(resultType);
             result.GetType().GetField("$probe", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result, probe);
@@ -72,9 +57,8 @@ namespace Platform.Invoke.Tests
 
             // Assert
             Assert.AreEqual("Hello World!", res);
-            probe.Received().OnBeginInvoke(Arg.Any<MethodInfo>());
-            probe.Received().OnEndInvoke(Arg.Any<MethodInfo>());
-
+            probe.Received().OnBeginInvoke(Arg.Any<MethodInfo>(), (IFoo)result);
+            probe.Received().OnEndInvoke(Arg.Any<MethodInfo>(), (IFoo)result);
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.Contracts;
 
+using Platform.Invoke.Unix;
 using Platform.Invoke.Windows;
 
 namespace Platform.Invoke
@@ -20,6 +21,10 @@ namespace Platform.Invoke
         {
             if(platform == PlatformID.Win32NT)
                 return new WindowsLibraryLoader();
+
+            if(platform == PlatformID.MacOSX || platform == PlatformID.Unix)
+                return new UnixLibraryLoader();
+
             throw new PlatformNotSupportedException();
         }
 

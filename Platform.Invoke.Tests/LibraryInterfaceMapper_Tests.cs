@@ -6,6 +6,8 @@ using System.Reflection.Emit;
 using NSubstitute;
 using NUnit.Framework;
 
+using Platform.Invoke.Attributes;
+
 namespace Platform.Invoke.Tests
 {
     [TestFixture]
@@ -23,7 +25,7 @@ namespace Platform.Invoke.Tests
 
         private class MockMethodWrapper : IMethodCallWrapper
         {
-            public MethodBuilder GenerateInvocation(TypeBuilder owner, MethodInfo overrideMethod, IEnumerable<FieldBuilder> fieldBuilders)
+            public MethodBuilder GenerateInvocation(TypeBuilder owner, Type interfaceType, MethodInfo overrideMethod, IEnumerable<FieldBuilder> fieldBuilders)
             {
                 var result = owner.DefineMethod
                    (
@@ -42,9 +44,17 @@ namespace Platform.Invoke.Tests
             }
         }
 
+        public abstract class AbstractFoo
+        {
+            public abstract string Foo();
+        }
+
+
         public class MockLibrary : ILibrary
         {
             public bool Received { get; private set; }
+
+            public string Name { get { return "Mock"; } }
 
             public void Dispose()
             {
@@ -84,6 +94,43 @@ namespace Platform.Invoke.Tests
 
             // Assert
             Assert.IsTrue(mockLibrary.Received);
+        }
+
+        [Test]
+        public void ImplementInterface_MissingMethod_ThrowsEntryPointNotFoundException()
+        {
+            // Arrange
+            var mockDelegateBuilder = Substitute.For<IDelegateTypeBuilder>();
+            mockDelegateBuilder.CreateDelegateType(Arg.Any<MethodInfo>(), Arg.Any<ModuleBuilder>()).Returns(typeof(Func<string>));
+            var mockLibrary = Substitute.For<ILibrary>();
+            mockLibrary.Name.Returns("FooLib");
+            mockLibrary.GetProcedure<Func<string>>(Arg.Any<string>()).Returns((Func<string>)null);
+
+            var lib = new LibraryInterfaceMapper(mockDelegateBuilder, new DefaultConstructorBuilder(null), new MockMethodWrapper());
+
+            // Act
+            // Assert
+            var ex = Assert.Throws<Platform.Invoke.MissingEntryPointException>(() => lib.Implement<IFoo>(mockLibrary));
+            Assert.AreEqual("DoFoo", ex.EntryPoint);
+            Assert.AreEqual("FooLib", ex.LibraryName);
+
+        }
+
+        [Test]
+        public void ImplementAbstractClass_Ok()
+        {
+            // Arrange
+            var mockDelegateBuilder = Substitute.For<IDelegateTypeBuilder>();
+            mockDelegateBuilder.CreateDelegateType(Arg.Any<MethodInfo>(), Arg.Any<ModuleBuilder>()).Returns(typeof(Func<string>));
+            var mockLibrary = Substitute.For<ILibrary>();
+            var lib = new LibraryInterfaceMapper(mockDelegateBuilder, new DefaultConstructorBuilder(null), new MockMethodWrapper());
+
+
+            // Act
+            var result = lib.Implement<AbstractFoo>(mockLibrary);
+
+            // Assert
+            mockLibrary.Received(1).GetProcedure<Func<string>>("Foo");
         }
 
     }

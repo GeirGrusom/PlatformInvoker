@@ -18,24 +18,28 @@ namespace Platform.Invoke
 
         public FieldBuilder ProbeField { get; private set; }
 
-        protected override ConstructorBuilder DefineConstructor(TypeBuilder owner)
+        protected override ConstructorBuilder DefineConstructor(TypeBuilder owner, Type interfaceType)
         {
+            var probeType = typeof(IMethodCallProbe<>).MakeGenericType(interfaceType);
             return owner.DefineConstructor(
                 MethodAttributes.Public,
                 CallingConventions.Standard,
-                new[] { typeof(ILibrary), typeof(IMethodCallProbe) });
+                new[] { typeof(ILibrary), probeType });
         }
 
 
-        protected override void EmitBegin(TypeBuilder type, ILGenerator generator)
+        protected override void EmitBegin(TypeBuilder type, Type interfaceType, ILGenerator generator)
         {
-            var field = type.DefineField("$probe", typeof(IMethodCallProbe), FieldAttributes.Private | FieldAttributes.InitOnly);
+
+            var probeType = typeof(IMethodCallProbe<>).MakeGenericType(interfaceType);
+
+            var field = type.DefineField("$probe", probeType, FieldAttributes.Private | FieldAttributes.InitOnly);
             ProbeField = field;
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Ldarg_2);
             generator.Emit(OpCodes.Stfld, field);
 
-            base.EmitBegin(type, generator);
+            base.EmitBegin(type, interfaceType, generator);
         }
     }
 }

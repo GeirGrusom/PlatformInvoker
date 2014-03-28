@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Platform.Invoke</id>
+    <title>Platform Invoke</title>
+    <version>$version$</version>
+    <authors>Henning Moe</authors>
+    <description>Platform invoke library</description>
+    <projectUrl>https://github.com/GeirGrusom/PlatformInvoker</projectUrl>
+    <licenceUrl>https://www.gnu.org/licenses/lgpl.html</licenceUrl>
+    <tags>platform pinvoke invoke library dll</tags>
+  </metadata>
+</package>

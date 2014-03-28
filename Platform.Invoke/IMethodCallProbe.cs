@@ -2,9 +2,10 @@ using System.Reflection;
 
 namespace Platform.Invoke
 {
-    public interface IMethodCallProbe
+    public interface IMethodCallProbe<in TInterface>
+        where TInterface : class
     {
-        void OnBeginInvoke(MethodInfo method);
-        void OnEndInvoke(MethodInfo method);
+        void OnBeginInvoke(MethodInfo method, TInterface reference);
+        void OnEndInvoke(MethodInfo method, TInterface reference);
     }
 }

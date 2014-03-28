@@ -1,12 +1,24 @@
 ﻿using System;
+
 using NSubstitute;
+
 using NUnit.Framework;
+
 using Platform.Invoke.Windows;
 
-namespace Platform.Invoke.Tests.Windows
+namespace Platform.Invoke.Tests
 {
+    public class TestLibrary : LibraryBase
+    {
+        public TestLibrary(IntPtr moduleHandle, ILibraryProcProvider provider, string libraryName)
+            : base(moduleHandle, provider, libraryName)
+        {
+        }
+    }
+
+
     [TestFixture]
-    public class WindowsLibrary_Tests
+    public class LibraryBase_Tests
     {
         [Test]
         public void Constructor_NullHandle_ThrowsArgumentNullException()
@@ -14,7 +26,7 @@ namespace Platform.Invoke.Tests.Windows
             // Arrange
             // Act
             // Assert
-            var ex = Assert.Throws<ArgumentNullException>(() => new WindowsLibrary(IntPtr.Zero));
+            var ex = Assert.Throws<ArgumentNullException>(() => new WindowsLibrary(IntPtr.Zero, null));
 
             Assert.AreEqual("moduleHandle", ex.ParamName);
         }
@@ -25,7 +37,7 @@ namespace Platform.Invoke.Tests.Windows
             // Arrange
             // Act
             // Assert
-            var ex = Assert.Throws<ArgumentNullException>(() => new WindowsLibrary(IntPtr.Zero, new LibraryProcProvider()));
+            var ex = Assert.Throws<ArgumentNullException>(() => new TestLibrary(IntPtr.Zero, new WindowsLibraryProcProvider(), null));
 
             Assert.AreEqual("moduleHandle", ex.ParamName);
         }
@@ -35,7 +47,7 @@ namespace Platform.Invoke.Tests.Windows
             // Arrange
             // Act
             // Assert
-            var ex = Assert.Throws<ArgumentNullException>(() => new WindowsLibrary(new IntPtr(1), null));
+            var ex = Assert.Throws<ArgumentNullException>(() => new TestLibrary(new IntPtr(1), null, null));
 
             Assert.AreEqual("provider", ex.ParamName);
         }
@@ -47,7 +59,7 @@ namespace Platform.Invoke.Tests.Windows
             var mock = Substitute.For<ILibraryProcProvider>();
 
             // Act
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Assert
             Assert.IsNotNull(lib);
@@ -58,7 +70,7 @@ namespace Platform.Invoke.Tests.Windows
         {
             // Arrange
             var mock = Substitute.For<ILibraryProcProvider>();
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Act
             var ex = Assert.Throws<ArgumentNullException>(() => lib.GetProcedure(typeof (Action), null));
@@ -72,7 +84,7 @@ namespace Platform.Invoke.Tests.Windows
         {
             // Arrange
             var mock = Substitute.For<ILibraryProcProvider>();
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Act
             var ex = Assert.Throws<ArgumentNullException>(() => lib.GetProcedure(null, "Foo"));
@@ -86,7 +98,7 @@ namespace Platform.Invoke.Tests.Windows
         {
             // Arrange
             var mock = Substitute.For<ILibraryProcProvider>();
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Act
             var ex = Assert.Throws<ArgumentException>(() => lib.GetProcedure(typeof(string), "Foo"));
@@ -104,7 +116,7 @@ namespace Platform.Invoke.Tests.Windows
             mock.GetProc(Arg.Any<IntPtr>(), Arg.Any<string>()).Returns(IntPtr.Zero);
             mock.GetDelegateFromFunctionPointer(Arg.Any<IntPtr>(), Arg.Any<Type>())
                 .Returns(new Action(GetProcuedure_NonGeneric_DelegateTypeIsNotADelegate_ThrowsArgumentNullException));
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Act
             var result = lib.GetProcedure(typeof (Action), "Foo");
@@ -121,7 +133,7 @@ namespace Platform.Invoke.Tests.Windows
             mock.GetProc(Arg.Any<IntPtr>(), Arg.Any<string>()).Returns(new IntPtr(1));
             mock.GetDelegateFromFunctionPointer(Arg.Any<IntPtr>(), Arg.Any<Type>())
                 .Returns(new Action(GetProcuedure_NonGeneric_DelegateTypeIsNotADelegate_ThrowsArgumentNullException));
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Act
             var result = lib.GetProcedure(typeof(Action), "Foo");
@@ -135,7 +147,7 @@ namespace Platform.Invoke.Tests.Windows
         {
             // Arrange
             var mock = Substitute.For<ILibraryProcProvider>();
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Act
             var ex = Assert.Throws<ArgumentNullException>(() => lib.GetProcedure<Action>(null));
@@ -150,7 +162,7 @@ namespace Platform.Invoke.Tests.Windows
         {
             // Arrange
             var mock = Substitute.For<ILibraryProcProvider>();
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Act
             var ex = Assert.Throws<ArgumentException>(() => lib.GetProcedure<string>("Foo"));
@@ -168,7 +180,7 @@ namespace Platform.Invoke.Tests.Windows
             mock.GetProc(Arg.Any<IntPtr>(), Arg.Any<string>()).Returns(IntPtr.Zero);
             mock.GetDelegateFromFunctionPointer(Arg.Any<IntPtr>(), Arg.Any<Type>())
                 .Returns(new Action(GetProcuedure_NonGeneric_DelegateTypeIsNotADelegate_ThrowsArgumentNullException));
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Act
             var result = lib.GetProcedure<Action>("Foo");
@@ -185,7 +197,7 @@ namespace Platform.Invoke.Tests.Windows
             mock.GetProc(Arg.Any<IntPtr>(), Arg.Any<string>()).Returns(new IntPtr(1));
             mock.GetDelegateFromFunctionPointer(Arg.Any<IntPtr>(), Arg.Any<Type>())
                 .Returns(new Action(GetProcuedure_NonGeneric_DelegateTypeIsNotADelegate_ThrowsArgumentNullException));
-            var lib = new WindowsLibrary(new IntPtr(1), mock);
+            var lib = new TestLibrary(new IntPtr(1), mock, null);
 
             // Act
             var result = lib.GetProcedure<Action>("Foo");

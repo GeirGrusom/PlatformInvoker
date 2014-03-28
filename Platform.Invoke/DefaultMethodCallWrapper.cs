@@ -8,23 +8,23 @@ namespace Platform.Invoke
 {
     public interface IMethodCallWrapper
     {
-        MethodBuilder GenerateInvocation(TypeBuilder owner, MethodInfo overrideMethod, IEnumerable<FieldBuilder> fieldBuilders);
+        MethodBuilder GenerateInvocation(TypeBuilder owner, Type interfaceType, MethodInfo overrideMethod, IEnumerable<FieldBuilder> fieldBuilders);
     }
 
     public class DefaultMethodCallWrapper : IMethodCallWrapper
     {
-        protected virtual void OnInvokeBegin(TypeBuilder type, ILGenerator generator, MethodInfo interfaceMethod)
+        protected virtual void OnInvokeBegin(TypeBuilder type, Type interfaceType, ILGenerator generator, MethodInfo interfaceMethod)
         {
             
         }
 
 
-        protected virtual void OnInvokeEnd(TypeBuilder type, ILGenerator generator, MethodInfo interfaceMethod)
+        protected virtual void OnInvokeEnd(TypeBuilder type, Type interfaceType, ILGenerator generator, MethodInfo interfaceMethod)
         {
             
         }
 
-        public MethodBuilder GenerateInvocation(TypeBuilder owner, MethodInfo overrideMethod, IEnumerable<FieldBuilder> fieldBuilders)
+        public MethodBuilder GenerateInvocation(TypeBuilder owner, Type interfaceType, MethodInfo overrideMethod, IEnumerable<FieldBuilder> fieldBuilders)
         {
             var result = owner.DefineMethod
                     (
@@ -41,7 +41,7 @@ namespace Platform.Invoke
 
             var field = fieldBuilders.First(f => f.Name == LibraryInterfaceMapper.GetFieldNameForMethodInfo(overrideMethod));
             var parameters = overrideMethod.GetParameters();
-            OnInvokeBegin(owner, generator, overrideMethod);
+            OnInvokeBegin(owner, interfaceType, generator, overrideMethod);
             generator.Emit(OpCodes.Ldarg_0); //  this
             generator.Emit(OpCodes.Ldfld, field); // MethodNameProc _glMethodName. Initialized by constructor.
             foreach (var item in parameters.Where(p => !p.IsRetval).Select((p, i) => new { Type = p, Index = i }))
@@ -51,7 +51,7 @@ namespace Platform.Invoke
             
             generator.EmitCall(OpCodes.Callvirt, field.FieldType.GetMethod("Invoke"), null);
 
-            OnInvokeEnd(owner, generator, overrideMethod);
+            OnInvokeEnd(owner, interfaceType, generator, overrideMethod);
 
             generator.Emit(OpCodes.Ret);
 

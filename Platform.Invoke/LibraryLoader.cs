@@ -9,6 +9,8 @@ namespace Platform.Invoke
 {
     public interface ILibrary : IDisposable
     {
+        string Name { get; }
+
         [Pure]
         Delegate GetProcedure(Type delegateType, string name);
 

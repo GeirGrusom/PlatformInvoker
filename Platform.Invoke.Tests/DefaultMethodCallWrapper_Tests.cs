@@ -62,7 +62,7 @@ namespace Platform.Invoke.Tests
             var field = type.DefineField("_Foo", typeof(OutFoo), FieldAttributes.Public);
 
             // Act
-            var resultMethod = wrapper.GenerateInvocation(type, fooString, new[] { field });
+            var resultMethod = wrapper.GenerateInvocation(type, typeof(OutFoo), fooString, new[] { field });
 
             var resultType = type.CreateType();
 
@@ -88,7 +88,7 @@ namespace Platform.Invoke.Tests
             var field = type.DefineField("_Foo", typeof (Func<string>), FieldAttributes.Public);
 
             // Act
-            wrapper.GenerateInvocation(type, 
+            wrapper.GenerateInvocation(type, typeof(IFoo), 
                 fooMethod,
                 new [] {field});
 
@@ -120,7 +120,7 @@ namespace Platform.Invoke.Tests
             var field = type.DefineField("_Foo_WithString", typeof(Func<string, string>), FieldAttributes.Public);
 
             // Act
-            var resultMethod = wrapper.GenerateInvocation(type,
+            var resultMethod = wrapper.GenerateInvocation(type, typeof(IFooWithString),
                 fooString,
                 new[] { field });
 

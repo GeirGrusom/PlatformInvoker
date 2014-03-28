@@ -5,29 +5,30 @@ using System.Reflection;
 namespace Platform.Invoke
 {
     [ImmutableObject(true)]
-    public class ProcProbe : IMethodCallProbe
+    public class ProcProbe<TInterface> : IMethodCallProbe<TInterface>
+        where TInterface : class
     {
-        private readonly Action<MethodInfo> begin;
+        private readonly Action<MethodInfo, TInterface> begin;
 
-        private readonly Action<MethodInfo> end;
+        private readonly Action<MethodInfo, TInterface> end;
 
-        public ProcProbe(Action<MethodInfo> onBegin, Action<MethodInfo> onEnd)
+        public ProcProbe(Action<MethodInfo, TInterface> onBegin, Action<MethodInfo, TInterface> onEnd)
         {
             this.begin = onBegin;
             this.end = onEnd;
         }
 
-        void IMethodCallProbe.OnBeginInvoke(MethodInfo method)
+        void IMethodCallProbe<TInterface>.OnBeginInvoke(MethodInfo method, TInterface reference)
         {
             if (this.begin != null)
-                this.begin(method);
+                this.begin(method, reference);
         }
 
 
-        void IMethodCallProbe.OnEndInvoke(MethodInfo method)
+        void IMethodCallProbe<TInterface>.OnEndInvoke(MethodInfo method, TInterface reference)
         {
             if (this.end != null)
-                this.end(method);
+                this.end(method, reference);
         }
     }
 }

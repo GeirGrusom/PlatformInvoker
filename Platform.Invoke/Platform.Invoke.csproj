@@ -11,6 +11,7 @@
     <AssemblyName>Platform.Invoke</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -39,6 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\EntryPointAttribute.cs" />
+    <Compile Include="Attributes\LibraryAttribute.cs" />
+    <Compile Include="Attributes\SkipProbeAttribute.cs" />
     <Compile Include="CustomAttributeNamedArgumentComparer.cs" />
     <Compile Include="DefaultConstructorBuilder.cs" />
     <Compile Include="DelegateTypeBuilder.cs" />
@@ -46,13 +52,25 @@
     <Compile Include="LibraryInterfaceMapper.cs" />
     <Compile Include="LibraryLoader.cs" />
     <Compile Include="LibraryInterfaceFactory.cs" />
+    <Compile Include="LibraryLoaderBase.cs" />
     <Compile Include="LibraryLoaderFactory.cs" />
     <Compile Include="DefaultMethodCallWrapper.cs" />
+    <Compile Include="MissingEntryPointException.cs" />
     <Compile Include="ProbingConstructorBuilder.cs" />
     <Compile Include="ProbingMethodCallWrapper.cs" />
     <Compile Include="ProcProbe.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Unix\UnixLibrary.cs" />
+    <Compile Include="Unix\UnixLibraryLoader.cs" />
+    <Compile Include="ILibraryProcProvider.cs" />
+    <Compile Include="Unix\UnixLibraryProcProvider.cs" />
+    <Compile Include="LibraryBase.cs" />
+    <Compile Include="Windows\WindowsLibrary.cs" />
     <Compile Include="Windows\WindowsLibraryLoader.cs" />
+    <Compile Include="Windows\WindowsLibraryProcProvider.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="nuget.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

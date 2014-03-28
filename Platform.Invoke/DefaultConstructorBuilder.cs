@@ -5,11 +5,13 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
+using Platform.Invoke.Attributes;
+
 namespace Platform.Invoke
 {
     public interface IConstructorBuilder
     {
-        ConstructorBuilder GenerateConstructor(TypeBuilder owner,
+        ConstructorBuilder GenerateConstructor(TypeBuilder owner, Type interfaceType,
             IEnumerable<MethodInfo> methods,
             IEnumerable<FieldBuilder> fields);
     }
@@ -32,7 +34,7 @@ namespace Platform.Invoke
         }
 
 
-        protected virtual ConstructorBuilder DefineConstructor(TypeBuilder owner)
+        protected virtual ConstructorBuilder DefineConstructor(TypeBuilder owner, Type interfaceType)
         {
             return owner.DefineConstructor(
                 MethodAttributes.Public,
@@ -41,38 +43,41 @@ namespace Platform.Invoke
         }
 
 
-        protected virtual void EmitBegin(TypeBuilder type, ILGenerator generator)
+        protected virtual void EmitBegin(TypeBuilder type, Type interfaceType, ILGenerator generator)
         {
             
         }
 
 
-        protected virtual void EmitEnd(TypeBuilder type, ILGenerator generator)
+        protected virtual void EmitEnd(TypeBuilder type, Type interfaceType, ILGenerator generator)
         {
             
         }
 
-        public ConstructorBuilder GenerateConstructor(TypeBuilder owner, IEnumerable<MethodInfo> methods, IEnumerable<FieldBuilder> fields)
+        public ConstructorBuilder GenerateConstructor(TypeBuilder owner, Type interfaceType, IEnumerable<MethodInfo> methods, IEnumerable<FieldBuilder> fields)
         {
-            var builder = DefineConstructor(owner);
+            var builder = DefineConstructor(owner, interfaceType);
 
             var generator = builder.GetILGenerator();
             
-            var notSupportedConstructor = typeof(MissingMethodException).GetConstructor(
-                new[] { typeof(string) });
+            var notSupportedConstructor = typeof(MissingEntryPointException).GetConstructor(
+                new[] { typeof(string), typeof(ILibrary) });
 
             if (notSupportedConstructor == null)
-                throw new MissingMethodException("MissingMethodException", ".ctr(string)");
+                throw new MissingMethodException("MissingEntryPointException", ".ctr(string, ILibrary)");
             var loc = generator.DeclareLocal(typeof(Delegate));
             var fieldBuilders = fields as FieldBuilder[] ?? fields.ToArray();
 
-            EmitBegin(owner, generator);
+            EmitBegin(owner, interfaceType, generator);
 
             foreach (var method in methods)
             {
                 generator.BeginScope();
+
+                var entryPoint = method.GetCustomAttribute<EntryPointAttribute>();
+
+                string methodName = entryPoint != null ? entryPoint.Name : lookupFunctionName(method.Name);
                 
-                string methodName = lookupFunctionName(method.Name);
                 var name = LibraryInterfaceMapper.GetFieldNameForMethodInfo(method);
                 var field = fieldBuilders.Single(f => f.Name == name);
                 var okLabel = generator.DefineLabel();
@@ -89,6 +94,7 @@ namespace Platform.Invoke
                 generator.Emit(OpCodes.Ldloc, loc); 
                 generator.Emit(OpCodes.Brtrue_S, okLabel); // if(result != null) goto okLabel
                 generator.Emit(OpCodes.Ldstr, methodName);
+                generator.Emit(OpCodes.Ldarg_1);
                 generator.Emit(OpCodes.Newobj, notSupportedConstructor);
                 generator.Emit(OpCodes.Throw); // throw new MissingMethodException(methodName)
                 
@@ -101,7 +107,7 @@ namespace Platform.Invoke
                 generator.EndScope();
             }
 
-            EmitEnd(owner, generator);
+            EmitEnd(owner, interfaceType, generator);
 
             generator.Emit(OpCodes.Ret);
 

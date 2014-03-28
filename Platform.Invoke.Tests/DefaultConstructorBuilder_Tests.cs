@@ -10,6 +10,8 @@ using NSubstitute;
 
 using NUnit.Framework;
 
+using Platform.Invoke.Attributes;
+
 namespace Platform.Invoke.Tests
 {
     [TestFixture]
@@ -21,6 +23,12 @@ namespace Platform.Invoke.Tests
 
         private interface IFoo
         {
+            string Foo();
+        }
+
+        private interface IFooWithEntryPoint
+        {
+            [EntryPoint("Bar")]
             string Foo();
         }
 
@@ -39,21 +47,40 @@ namespace Platform.Invoke.Tests
             module = assembly.DefineDynamicModule("TestModule", emitSymbolInfo: true);
         }
 
+
+        [Test]
+        public void UsesEntryPointAttributeForLookup_FieldNameRemainsTheSame()
+        {
+            // Arrange
+            var type = module.DefineType("ConstructorType_FieldRemainsTheSame", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
+            var builder = new DefaultConstructorBuilder(null);
+            var lib = Substitute.For<ILibrary>();
+            lib.GetProcedure<Func<string>>(Arg.Any<string>()).Returns(() => "Hello world!");
+
+            var f = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
+
+            // Act
+            var ctor = builder.GenerateConstructor(type, typeof(IFooWithEntryPoint), typeof(IFooWithEntryPoint).GetMethods(), new[] { f });
+            var result = Activator.CreateInstance(type.CreateType(), lib);
+
+            // Assert
+            lib.Received().GetProcedure<Func<string>>("Bar");
+        }
+
         [Test]
         public void GeneratesConstructor_Ok()
         {
             // Arrange
-            var type = module.DefineType("ConstructorType", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
+            var type = module.DefineType("ConstructorType_Ok", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
             var builder = new DefaultConstructorBuilder(null);
             var lib = Substitute.For<ILibrary>();
-            lib.GetProcedure(typeof(Func<string>), "Foo").Returns(new Func<string>(() => "Hello world!"));
             lib.GetProcedure<Func<string>>("Foo").Returns(() => "Hello world!");
 
             
             var f = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
             
             // Act
-            var ctor = builder.GenerateConstructor(type, typeof(IFoo).GetMethods(), new[] { f });
+            var ctor = builder.GenerateConstructor(type, typeof(IFoo), typeof(IFoo).GetMethods(), new[] { f });
 
             // Assert
             var result = Activator.CreateInstance(type.CreateType(), lib);
@@ -78,7 +105,7 @@ namespace Platform.Invoke.Tests
             var bar = type.DefineField("_Bar", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
 
             // Act
-            var ctor = builder.GenerateConstructor(type, typeof(IFooBar).GetMethods(), new[] { foo, bar });
+            var ctor = builder.GenerateConstructor(type,  typeof(IFooBar), typeof(IFooBar).GetMethods(), new[] { foo, bar });
 
             // Assert
             var result = Activator.CreateInstance(type.CreateType(), lib);
@@ -87,6 +114,5 @@ namespace Platform.Invoke.Tests
             Assert.IsNotNull(result.GetType().GetField("_Foo", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
             Assert.IsNotNull(result.GetType().GetField("_Bar", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
         }
-
     }
 }
