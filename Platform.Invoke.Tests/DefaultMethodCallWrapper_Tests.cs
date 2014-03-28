@@ -59,7 +59,7 @@ namespace Platform.Invoke.Tests
             type.AddInterfaceImplementation(typeof(IFooWithOutString));
             var fooString = typeof(IFooWithOutString).GetMethod("Foo");
 
-            var field = type.DefineField("_Foo", typeof(OutFoo), FieldAttributes.Public);
+            var field = type.DefineField("_Foo_String&", typeof(OutFoo), FieldAttributes.Public);
 
             // Act
             var resultMethod = wrapper.GenerateInvocation(type, typeof(OutFoo), fooString, new[] { field });
@@ -69,7 +69,7 @@ namespace Platform.Invoke.Tests
             // Assert
 
             var obj = Activator.CreateInstance(resultType);
-            obj.GetType().GetField("_Foo").SetValue(obj, new OutFoo(OutFooProc));
+            obj.GetType().GetField("_Foo_String&").SetValue(obj, new OutFoo(OutFooProc));
             string result;
             ((IFooWithOutString)obj).Foo(out result);
 
@@ -85,7 +85,7 @@ namespace Platform.Invoke.Tests
             
             var fooMethod = typeof(IFoo).GetMethod("Foo");
             
-            var field = type.DefineField("_Foo", typeof (Func<string>), FieldAttributes.Public);
+            var field = type.DefineField("_Foo_", typeof (Func<string>), FieldAttributes.Public);
 
             // Act
             wrapper.GenerateInvocation(type, typeof(IFoo), 
@@ -98,7 +98,7 @@ namespace Platform.Invoke.Tests
             // Assert
 
             var obj = Activator.CreateInstance(resultType);
-            obj.GetType().GetField("_Foo").SetValue(obj, new Func<string>(Foo));
+            obj.GetType().GetField("_Foo_").SetValue(obj, new Func<string>(Foo));
             var result = fooMethod.Invoke(obj, null);
             Assert.AreEqual("Hello World", result);
         }
@@ -117,7 +117,7 @@ namespace Platform.Invoke.Tests
             type.AddInterfaceImplementation(typeof(IFooWithString));
             var fooString = typeof(IFooWithString).GetMethod("Foo_WithString");
 
-            var field = type.DefineField("_Foo_WithString", typeof(Func<string, string>), FieldAttributes.Public);
+            var field = type.DefineField("_Foo_WithString_String", typeof(Func<string, string>), FieldAttributes.Public);
 
             // Act
             var resultMethod = wrapper.GenerateInvocation(type, typeof(IFooWithString),
@@ -129,7 +129,7 @@ namespace Platform.Invoke.Tests
             // Assert
 
             var obj = Activator.CreateInstance(resultType);
-            obj.GetType().GetField("_Foo_WithString").SetValue(obj, new Func<string, string>(Foo_WithString));
+            obj.GetType().GetField("_Foo_WithString_String").SetValue(obj, new Func<string, string>(Foo_WithString));
             var result = fooString.Invoke(obj, new object[] { "World" });
 
             Assert.AreEqual("Hello World!", result);

@@ -27,10 +27,7 @@ namespace Platform.Invoke
         /// <param name="lookupFunctionName">Supplies a function lookup name transformation. Set this to null to use the method name verbatim.</param>
         public DefaultConstructorBuilder(Func<string, string> lookupFunctionName)
         {
-            if (lookupFunctionName == null)
-                this.lookupFunctionName = s => s;
-            else
-                this.lookupFunctionName = lookupFunctionName;
+            this.lookupFunctionName = lookupFunctionName;
         }
 
 
@@ -76,8 +73,24 @@ namespace Platform.Invoke
 
                 var entryPoint = method.GetCustomAttribute<EntryPointAttribute>();
 
-                string methodName = entryPoint != null ? entryPoint.Name : lookupFunctionName(method.Name);
-                
+                string methodName;
+                if (entryPoint != null)
+                {
+                    methodName = entryPoint.Name;
+                }
+                else if (lookupFunctionName != null)
+                {
+                    methodName = lookupFunctionName(method.Name);
+                }
+                else
+                {
+                    var libAttrib = interfaceType.GetCustomAttribute<LibraryAttribute>();
+                    if (libAttrib != null && !string.IsNullOrEmpty(libAttrib.NameFormat))
+                        methodName = string.Format(libAttrib.NameFormat, method.Name);
+                    else
+                        methodName = method.Name;
+                }
+
                 var name = LibraryInterfaceMapper.GetFieldNameForMethodInfo(method);
                 var field = fieldBuilders.Single(f => f.Name == name);
                 var okLabel = generator.DefineLabel();

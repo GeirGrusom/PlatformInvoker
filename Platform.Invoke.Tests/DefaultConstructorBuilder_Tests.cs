@@ -57,7 +57,7 @@ namespace Platform.Invoke.Tests
             var lib = Substitute.For<ILibrary>();
             lib.GetProcedure<Func<string>>(Arg.Any<string>()).Returns(() => "Hello world!");
 
-            var f = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
+            var f = type.DefineField("_Foo_", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
 
             // Act
             var ctor = builder.GenerateConstructor(type, typeof(IFooWithEntryPoint), typeof(IFooWithEntryPoint).GetMethods(), new[] { f });
@@ -77,7 +77,7 @@ namespace Platform.Invoke.Tests
             lib.GetProcedure<Func<string>>("Foo").Returns(() => "Hello world!");
 
             
-            var f = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
+            var f = type.DefineField("_Foo_", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
             
             // Act
             var ctor = builder.GenerateConstructor(type, typeof(IFoo), typeof(IFoo).GetMethods(), new[] { f });
@@ -86,7 +86,7 @@ namespace Platform.Invoke.Tests
             var result = Activator.CreateInstance(type.CreateType(), lib);
             
             Assert.IsNotNull(result);
-            Assert.IsNotNull(result.GetType().GetField("_Foo", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
+            Assert.IsNotNull(result.GetType().GetField("_Foo_", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
         }
 
         [Test]
@@ -101,8 +101,8 @@ namespace Platform.Invoke.Tests
             lib.GetProcedure<Func<string>>("Bar").Returns(() => "Hello world!");
 
 
-            var foo = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
-            var bar = type.DefineField("_Bar", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
+            var foo = type.DefineField("_Foo_", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
+            var bar = type.DefineField("_Bar_", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
 
             // Act
             var ctor = builder.GenerateConstructor(type,  typeof(IFooBar), typeof(IFooBar).GetMethods(), new[] { foo, bar });
@@ -111,8 +111,8 @@ namespace Platform.Invoke.Tests
             var result = Activator.CreateInstance(type.CreateType(), lib);
 
             Assert.IsNotNull(result);
-            Assert.IsNotNull(result.GetType().GetField("_Foo", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
-            Assert.IsNotNull(result.GetType().GetField("_Bar", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
+            Assert.IsNotNull(result.GetType().GetField("_Foo_", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
+            Assert.IsNotNull(result.GetType().GetField("_Bar_", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
         }
     }
 }

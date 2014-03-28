@@ -38,8 +38,8 @@ namespace Platform.Invoke
             result.SetImplementationFlags(MethodImplAttributes.AggressiveInlining);
 
             var generator = result.GetILGenerator();
-
-            var field = fieldBuilders.First(f => f.Name == LibraryInterfaceMapper.GetFieldNameForMethodInfo(overrideMethod));
+            var fieldName = LibraryInterfaceMapper.GetFieldNameForMethodInfo(overrideMethod);
+            var field = fieldBuilders.First(f => f.Name == fieldName);
             var parameters = overrideMethod.GetParameters();
             OnInvokeBegin(owner, interfaceType, generator, overrideMethod);
             generator.Emit(OpCodes.Ldarg_0); //  this

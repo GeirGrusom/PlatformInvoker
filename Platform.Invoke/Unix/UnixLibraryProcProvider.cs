@@ -8,10 +8,10 @@ namespace Platform.Invoke.Unix
     [ImmutableObject(true)]
     public sealed class UnixLibraryProcProvider : ILibraryProcProvider
     {
-        [DllImport("ld")]
+        [DllImport("ld-linux.so.2")]
         private static extern IntPtr dlsym(IntPtr handle, [In]string symbolName);
 
-        [DllImport("ld")]
+        [DllImport("ld-linux.so.2")]
         private static extern int dlclose(IntPtr handle);
 
         public bool Free(IntPtr module)

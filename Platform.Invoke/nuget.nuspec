@@ -3,7 +3,7 @@
   <metadata>
     <id>Platform.Invoke</id>
     <title>Platform Invoke</title>
-    <version>1.0.0.0</version>
+    <version>1.0.1.0</version>
     <authors>Henning Moe, OKB AS</authors>
     <description>Platform invoke library</description>
     <projectUrl>https://github.com/GeirGrusom/PlatformInvoker</projectUrl>

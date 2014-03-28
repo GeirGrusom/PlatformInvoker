@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -45,7 +43,7 @@ namespace Platform.Invoke
         private IEnumerable<Type> GetTypeInterfaces(Type type)
         {
             var interf = type.GetInterfaces();
-            return interf.Concat(interf.SelectMany(t => t.GetInterfaces().SelectMany(GetTypeInterfaces)));
+            return interf.Union(interf.SelectMany(GetTypeInterfaces));
         }
 
         /// <summary>
@@ -122,7 +120,7 @@ namespace Platform.Invoke
 
         internal static string GetFieldNameForMethodInfo(MethodInfo method)
         {
-            return string.Format("_{0}", method.Name);
+            return string.Format("_{0}_{1}", method.Name, string.Join("_", method.GetParameters().Select(p => p.ParameterType.Name)));
         }
     }
 }

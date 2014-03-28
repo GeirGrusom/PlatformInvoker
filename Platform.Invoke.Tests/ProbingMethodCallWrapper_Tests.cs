@@ -41,7 +41,7 @@ namespace Platform.Invoke.Tests
 
             // Setup mock type builder
             var type = module.DefineType("TestType");
-            var foo = type.DefineField("_Foo", typeof(Func<string>), FieldAttributes.Private);
+            var foo = type.DefineField("_Foo_", typeof(Func<string>), FieldAttributes.Private);
             var probeField = type.DefineField("$probe", typeof(IMethodCallProbe<IFoo>), FieldAttributes.Private);
             type.DefineDefaultConstructor(MethodAttributes.Public);
             type.AddInterfaceImplementation(typeof(IFoo));
@@ -50,7 +50,7 @@ namespace Platform.Invoke.Tests
             var resultType = type.CreateType();
             var result = Activator.CreateInstance(resultType);
             result.GetType().GetField("$probe", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result, probe);
-            result.GetType().GetField("_Foo", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result, new Func<string>(Foo)); 
+            result.GetType().GetField("_Foo_", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result, new Func<string>(Foo)); 
 
             // Act
             string res = ((IFoo)result).Foo();
