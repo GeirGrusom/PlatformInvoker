@@ -16,6 +16,7 @@ What does it support?
   libraries.
 * Marshal attributes still work.
 * Both 32-bit and 64-bit is supported.
+* Unix should work as well (both OS X and Linux)
 
 Open issues
 ===========
