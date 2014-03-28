@@ -38,6 +38,11 @@ namespace Platform.Invoke.Tests
             string Bar();
         }
 
+        [EntryPointFormat("prefix-{0}")]
+        private interface IFooWithNamingConvention
+        {
+            string Foo();
+        }
 
         [TestFixtureSetUp]
         public void Setup()
@@ -65,6 +70,25 @@ namespace Platform.Invoke.Tests
 
             // Assert
             lib.Received().GetProcedure<Func<string>>("Bar");
+        }
+
+        [Test]
+        public void UsesEntryPointFormat()
+        {
+            // Arrange
+            var type = module.DefineType("ConstructorType_FieldRemainsTheSame", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
+            var builder = new DefaultConstructorBuilder(null);
+            var lib = Substitute.For<ILibrary>();
+            lib.GetProcedure<Func<string>>(Arg.Any<string>()).Returns(() => "Hello world!");
+
+            var f = type.DefineField("_Foo_", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
+
+            // Act
+            var ctor = builder.GenerateConstructor(type, typeof(IFooWithNamingConvention), typeof(IFooWithNamingConvention).GetMethods(), new[] { f });
+            var result = Activator.CreateInstance(type.CreateType(), lib);
+
+            // Assert
+            lib.Received().GetProcedure<Func<string>>("prefix-Foo");
         }
 
         [Test]

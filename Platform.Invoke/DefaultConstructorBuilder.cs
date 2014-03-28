@@ -84,9 +84,9 @@ namespace Platform.Invoke
                 }
                 else
                 {
-                    var libAttrib = interfaceType.GetCustomAttribute<LibraryAttribute>();
-                    if (libAttrib != null && !string.IsNullOrEmpty(libAttrib.NameFormat))
-                        methodName = string.Format(libAttrib.NameFormat, method.Name);
+                    var libAttrib = interfaceType.GetCustomAttribute<EntryPointFormatAttribute>();
+                    if (libAttrib != null && !string.IsNullOrEmpty(libAttrib.Format))
+                        methodName = string.Format(libAttrib.Format, method.Name);
                     else
                         methodName = method.Name;
                 }

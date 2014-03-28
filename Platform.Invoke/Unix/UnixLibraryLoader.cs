@@ -43,7 +43,7 @@ namespace Platform.Invoke.Unix
             NoDelete = 0x01000,
         }
 
-        [DllImport("ld-linux.so.2")]
+        [DllImport("ld.so")]
         private static extern IntPtr dlopen([In]string filename, Flags flags);
 
         public UnixLibraryLoader()
