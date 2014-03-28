@@ -48,3 +48,60 @@ Example
 Notice the the second argument which appends "A" to all function
 call mappings in User32 in reference to the second issue.
 
+Example with probing and attributes
+===================================
+
+	using System;
+	using System.Reflection;
+
+	using Platform.Invoke;
+	using Platform.Invoke.Attributes;
+
+	namespace Example
+	{
+		public enum ErrorCode : uint
+		{
+			NoError = 0,
+			InvalidOperation = 0x0502,
+		}
+
+		[Library("opengl32")]
+		public interface IOpenGL
+		{
+			[SkipProbe] // Don't invoke probe actions on this method. It would cause infinite recursion.
+			ErrorCode GetError();
+
+			void ClearColor (float red, float green, float blue, float alpha);
+		}
+
+		public class Program
+		{
+			static void BeginCall(MethodInfo method, IOpenGL gl)
+			{
+				gl.GetError(); // Clear last error state
+			}
+
+			static void EndCall(MethodInfo method, IOpenGL gl)
+			{
+				var error = gl.GetError();
+				if(error == ErrorCode.InvalidOperation)
+					throw new InvalidOperationException();
+			}
+
+
+			private static void Main()
+			{
+				var opengl = LibraryInterfaceFactory.Implement<IOpenGL>(BeginCall, EndCall, s => "gl" + s);
+				try
+				{
+					opengl.ClearColor(0, 0, 0, 1);
+					Console.WriteLine("Should have thrown InvalidOperationException since there is no context bound...");
+				}
+				catch (InvalidOperationException)
+				{
+					Console.WriteLine("Expected exception :D");
+				}
+			}
+		}
+	}
+
