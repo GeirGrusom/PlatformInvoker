@@ -3,11 +3,15 @@
   <metadata>
     <id>Platform.Invoke</id>
     <title>Platform Invoke</title>
-    <version>$version$</version>
-    <authors>Henning Moe</authors>
+    <version>1.0.0.0</version>
+    <authors>Henning Moe, OKB AS</authors>
     <description>Platform invoke library</description>
     <projectUrl>https://github.com/GeirGrusom/PlatformInvoker</projectUrl>
-    <licenceUrl>https://www.gnu.org/licenses/lgpl.html</licenceUrl>
+    <licenseUrl>https://www.gnu.org/licenses/lgpl.html</licenseUrl>
     <tags>platform pinvoke invoke library dll</tags>
   </metadata>
+  <files>
+    <file src="bin\Release\Platform.Invoke.dll" target="lib\net45"  />
+    <file src="bin\Release\Platform.Invoke.xml" target="lib\net45"  />
+  </files>
 </package>

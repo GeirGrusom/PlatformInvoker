@@ -16,7 +16,9 @@ What does it support?
   libraries.
 * Marshal attributes still work.
 * Both 32-bit and 64-bit is supported.
-* Unix should work as well (both OS X and Linux)
+* Unix should work as well (any system using ld, such as Linux or OS X)
+* Implementation uses ILibrary, so you can even use libraries that
+  implements extension functionality such as OpenGL or OpenAL.
 
 Open issues
 ===========
