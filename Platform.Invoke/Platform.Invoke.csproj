@@ -50,6 +50,7 @@
     <Compile Include="DefaultConstructorBuilder.cs" />
     <Compile Include="DelegateTypeBuilder.cs" />
     <Compile Include="IMethodCallProbe.cs" />
+    <Compile Include="InstanceOf.cs" />
     <Compile Include="LibraryInterfaceMapper.cs" />
     <Compile Include="LibraryLoader.cs" />
     <Compile Include="LibraryInterfaceFactory.cs" />

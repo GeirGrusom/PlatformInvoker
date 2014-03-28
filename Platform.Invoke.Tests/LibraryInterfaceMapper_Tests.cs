@@ -110,7 +110,8 @@ namespace Platform.Invoke.Tests
 
             // Act
             // Assert
-            var ex = Assert.Throws<Platform.Invoke.MissingEntryPointException>(() => lib.Implement<IFoo>(mockLibrary));
+            var ex = Assert.Throws<MissingEntryPointException>(() => lib.Implement<IFoo>(mockLibrary));
+
             Assert.AreEqual("DoFoo", ex.EntryPoint);
             Assert.AreEqual("FooLib", ex.LibraryName);
 

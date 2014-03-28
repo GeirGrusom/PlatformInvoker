@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Platform.Invoke.Attributes
 {
+    /// <summary>
+    /// Specifies probe actions for <see cref="SkipProbeAttribute"/>.
+    /// </summary>
     [Flags]
     public enum ProbeActions
     {

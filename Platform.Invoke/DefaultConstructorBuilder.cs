@@ -16,6 +16,9 @@ namespace Platform.Invoke
             IEnumerable<FieldBuilder> fields);
     }
 
+    /// <summary>
+    /// Defines the default implementation of IConstructorBuilder.
+    /// </summary>
     [ImmutableObject(true)]
     public class DefaultConstructorBuilder : IConstructorBuilder
     {
@@ -40,17 +43,36 @@ namespace Platform.Invoke
         }
 
 
+        /// <summary>
+        /// Method is invoked at start of constructor generator.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="interfaceType"></param>
+        /// <param name="generator"></param>
         protected virtual void EmitBegin(TypeBuilder type, Type interfaceType, ILGenerator generator)
         {
             
         }
 
-
+        /// <summary>
+        /// Method is invoked at the end of the constructor generator.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="interfaceType"></param>
+        /// <param name="generator"></param>
         protected virtual void EmitEnd(TypeBuilder type, Type interfaceType, ILGenerator generator)
         {
             
         }
 
+        /// <summary>
+        /// Generates the constructor using the specified arguments.
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="interfaceType"></param>
+        /// <param name="methods"></param>
+        /// <param name="fields"></param>
+        /// <returns></returns>
         public ConstructorBuilder GenerateConstructor(TypeBuilder owner, Type interfaceType, IEnumerable<MethodInfo> methods, IEnumerable<FieldBuilder> fields)
         {
             var builder = DefineConstructor(owner, interfaceType);

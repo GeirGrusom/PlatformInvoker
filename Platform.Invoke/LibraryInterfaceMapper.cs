@@ -19,6 +19,7 @@ namespace Platform.Invoke
         private readonly IMethodCallWrapper methodWrapper;
         private readonly IConstructorBuilder constructorBuilder;
 
+
         public LibraryInterfaceMapper(IDelegateTypeBuilder delegateBuilder, IConstructorBuilder ctorBuilder, IMethodCallWrapper methodWrapper)
         {
             if(delegateBuilder == null)
