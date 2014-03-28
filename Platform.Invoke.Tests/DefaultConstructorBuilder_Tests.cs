@@ -76,7 +76,7 @@ namespace Platform.Invoke.Tests
         public void UsesEntryPointFormat()
         {
             // Arrange
-            var type = module.DefineType("ConstructorType_FieldRemainsTheSame", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
+            var type = module.DefineType("ConstructorType_UsesEntryPointFormat", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
             var builder = new DefaultConstructorBuilder(null);
             var lib = Substitute.For<ILibrary>();
             lib.GetProcedure<Func<string>>(Arg.Any<string>()).Returns(() => "Hello world!");

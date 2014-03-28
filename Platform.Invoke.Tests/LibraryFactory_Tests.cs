@@ -37,27 +37,27 @@ namespace Platform.Invoke.Tests
         }
 
         [Test]
-        public void OsXPlatform_ReturnsWindowsImplementation()
+        public void OsXPlatform_ThrowsPlatformNotSupportedException()
         {
             // Arrange
 
             // Act
-            var result = LibraryLoaderFactory.Create(PlatformID.MacOSX);
-
             // Assert
-            Assert.IsInstanceOf<UnixLibraryLoader>(result);
+            Assert.Throws<PlatformNotSupportedException>(() => LibraryLoaderFactory.Create(PlatformID.MacOSX));
+
         }
 
         [Test]
-        public void UnixPlatform_ReturnsWindowsImplementation()
+        public void UnixPlatform_ThrowsPlatformNotSupportedException()
         {
             // Arrange
 
             // Act
-            var result = LibraryLoaderFactory.Create(PlatformID.Unix);
-
             // Assert
-            Assert.IsInstanceOf<UnixLibraryLoader>(result);
+            Assert.Throws<PlatformNotSupportedException>(() => LibraryLoaderFactory.Create(PlatformID.Unix));
+
+
+            
         }
     }
 }
