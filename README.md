@@ -16,7 +16,7 @@ What does it support?
   libraries.
 * Marshal attributes still work.
 * Both 32-bit and 64-bit is supported.
-* Unix support in the works :P
+* Unix support on Mono
 * Implementation uses ILibrary, so you can even use libraries that
   implements extension functionality such as OpenGL or OpenAL.
 
@@ -69,6 +69,7 @@ Example with probing and attributes
 		}
 
 		[Library("opengl32")]
+		[EntryPointFormat("gl{0}")]
 		public interface IOpenGL
 		{
 			[SkipProbe] // Don't invoke probe actions on this method. It would cause infinite recursion.
@@ -94,7 +95,7 @@ Example with probing and attributes
 
 			private static void Main()
 			{
-				var opengl = LibraryInterfaceFactory.Implement<IOpenGL>(BeginCall, EndCall, s => "gl" + s);
+				var opengl = LibraryInterfaceFactory.Implement<IOpenGL>(BeginCall, EndCall);
 				try
 				{
 					opengl.ClearColor(0, 0, 0, 1);
