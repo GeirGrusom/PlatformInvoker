@@ -4,6 +4,10 @@ using System.Reflection;
 
 namespace Platform.Invoke
 {
+    /// <summary>
+    /// Implements a probe with begin and end delegates.
+    /// </summary>
+    /// <typeparam name="TInterface"></typeparam>
     [ImmutableObject(true)]
     public class ProcProbe<TInterface> : IMethodCallProbe<TInterface>
         where TInterface : class
@@ -12,6 +16,11 @@ namespace Platform.Invoke
 
         private readonly Action<MethodInfo, TInterface> end;
 
+        /// <summary>
+        /// Creates a new probe using the specified begin and end delegates.
+        /// </summary>
+        /// <param name="onBegin"></param>
+        /// <param name="onEnd"></param>
         public ProcProbe(Action<MethodInfo, TInterface> onBegin, Action<MethodInfo, TInterface> onEnd)
         {
             this.begin = onBegin;

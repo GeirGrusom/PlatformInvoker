@@ -42,8 +42,10 @@ namespace Platform.Invoke.Tests
             // Arrange
 
             // Act
+            var result = LibraryLoaderFactory.Create(PlatformID.MacOSX);
+
             // Assert
-            Assert.Throws<PlatformNotSupportedException>(() => LibraryLoaderFactory.Create(PlatformID.MacOSX));
+            Assert.IsInstanceOf<UnixLibraryLoader>(result);
 
         }
 
@@ -53,11 +55,10 @@ namespace Platform.Invoke.Tests
             // Arrange
 
             // Act
+            var result = LibraryLoaderFactory.Create(PlatformID.MacOSX);
+
             // Assert
-            Assert.Throws<PlatformNotSupportedException>(() => LibraryLoaderFactory.Create(PlatformID.Unix));
-
-
-            
+            Assert.IsInstanceOf<UnixLibraryLoader>(result);
         }
     }
 }

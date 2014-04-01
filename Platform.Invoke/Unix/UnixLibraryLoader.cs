@@ -8,6 +8,9 @@ namespace Platform.Invoke.Unix
     /// </summary>
     public sealed class UnixLibraryLoader : LibraryLoaderBase
     {
+        /// <summary>
+        /// Defines flags used by dlopen.
+        /// </summary>
         [Flags]
         private enum Flags
         {
@@ -43,14 +46,29 @@ namespace Platform.Invoke.Unix
             NoDelete = 0x01000,
         }
 
-        [DllImport("ld.so")]
+        /// <summary>
+        /// Unix library loader function.
+        /// </summary>
+        /// <param name="filename">Filename to load,</param>
+        /// <param name="flags">Loader flags. Typically RTLD_LAZY.</param>
+        /// <returns>Handle to the library.</returns>
+        [DllImport("libdl")]
         private static extern IntPtr dlopen([In]string filename, Flags flags);
 
+        /// <summary>
+        /// Creates an instance of UnixLibraryLoader using default implementation with dlopen.
+        /// </summary>
         public UnixLibraryLoader()
             : base(s => dlopen(s, Flags.Lazy | Flags.Local))
         {
         }
 
+        /// <summary>
+        /// Returns the created library for the specified handle and library name.
+        /// </summary>
+        /// <param name="handle">Operating system provided library handle.</param>
+        /// <param name="libraryName">Name fo the loaded library.</param>
+        /// <returns><see cref="ILibrary"/> interface for the specified library.</returns>
         protected override ILibrary CreateLibrary(IntPtr handle, string libraryName)
         {
             return new UnixLibrary(handle, libraryName);

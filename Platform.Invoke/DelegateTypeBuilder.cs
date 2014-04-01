@@ -8,8 +8,17 @@ using System.Reflection.Emit;
 
 namespace Platform.Invoke
 {
+    /// <summary>
+    /// Provides an interface to create new delegate types.
+    /// </summary>
     public interface IDelegateTypeBuilder
     {
+        /// <summary>
+        /// Creates a <see cref="System.Delegate">delegate type</see> matching the specified method in the specified module.
+        /// </summary>
+        /// <param name="method">Method to create a delegate type for.</param>
+        /// <param name="module">Module that will contain the new delegate type.</param>
+        /// <returns>The created delegate type.</returns>
         [Pure]
         Type CreateDelegateType(MethodInfo method, ModuleBuilder module);
     }
@@ -20,6 +29,12 @@ namespace Platform.Invoke
     [ImmutableObject(true)]
     public class DelegateTypeBuilder : IDelegateTypeBuilder
     {
+        /// <summary>
+        /// Creates a <see cref="System.Delegate">delegate type</see> matching the specified method in the specified module.
+        /// </summary>
+        /// <param name="method">Method to create a delegate type for.</param>
+        /// <param name="module">Module that will contain the new delegate type.</param>
+        /// <returns>The created delegate type.</returns>
         [Pure]
         public Type CreateDelegateType(MethodInfo method, ModuleBuilder module)
         {
@@ -61,6 +76,11 @@ namespace Platform.Invoke
             return typeBuilder.CreateType();
         }
 
+        /// <summary>
+        /// Copies parameter attributes. This is used to copy marshalling attributes and other relevant data.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="parameter"></param>
         private static void CopyParameterAttributes(ParameterBuilder builder, ParameterInfo parameter)
         {
             foreach (var attrib in parameter.CustomAttributes)
@@ -91,6 +111,11 @@ namespace Platform.Invoke
             }
         }
 
+        /// <summary>
+        /// Fixes MarshalType attributes to overcome an issue where the TypeRef will look for the specified custom marshalling in the dynamic assembly.
+        /// </summary>
+        /// <param name="namedArguments"></param>
+        /// <returns></returns>
         private static IEnumerable<CustomAttributeNamedArgument> FixMarshalTypeAttributes(
             IList<CustomAttributeNamedArgument> namedArguments)
         {
@@ -102,6 +127,11 @@ namespace Platform.Invoke
             return namedArguments;
         }
 
+        /// <summary>
+        /// Copies return type attributes to the new type.
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="invokeMethod"></param>
         private static void ProcessReturnParameterAttributes(MethodInfo method, MethodBuilder invokeMethod)
         {
             invokeMethod.SetReturnType(method.ReturnType);

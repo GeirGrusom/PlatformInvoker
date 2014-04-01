@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\EntryPointAttribute.cs" />
+    <Compile Include="Attributes\EntryPointFormatAttribute.cs" />
     <Compile Include="Attributes\LibraryAttribute.cs" />
     <Compile Include="Attributes\SkipProbeAttribute.cs" />
     <Compile Include="CustomAttributeNamedArgumentComparer.cs" />

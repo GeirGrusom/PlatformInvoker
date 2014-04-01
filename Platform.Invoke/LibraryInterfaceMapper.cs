@@ -3,25 +3,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Security.Policy;
 
 namespace Platform.Invoke
 {
+    /// <summary>
+    /// Provides an interface for library interface mappers.
+    /// </summary>
     public interface ILibraryInterfaceMapper
     {
+        /// <summary>
+        /// Implements the specified interface using the specified library.
+        /// </summary>
+        /// <typeparam name="TInterface">Interface to implement.</typeparam>
+        /// <param name="library">Library to implement <see typeparamref="TInterface" /> with.</param>
+        /// <param name="additionalConstructorArguments">Additional parameters required by the <see cref="IConstructorBuilder"/>. <see cref="DefaultConstructorBuilder" /> requires no additional parameters. <see cref="ProbingConstructorBuilder"/> requires one parameter of type <see cref="IMethodCallProbe{TInterface}"/>.</param>
+        /// <returns>Implemented interface.</returns>
         TInterface Implement<TInterface>(ILibrary library, params object[] additionalConstructorArguments)
             where TInterface : class;
     }
 
+    /// <summary>
+    /// Implements the default library interface mapper using the specified <see cref="IDelegateTypeBuilder"/>, <see cref="IMethodCallWrapper"/> and <see cref="IConstructorBuilder"/>.
+    /// </summary>
     public sealed class LibraryInterfaceMapper : ILibraryInterfaceMapper
     {
-        private readonly ModuleBuilder moduleBuilder;
+        
         private readonly IDelegateTypeBuilder delegateBuilder;
         private readonly IMethodCallWrapper methodWrapper;
         private readonly IConstructorBuilder constructorBuilder;
 
+        [NonSerialized]
+        private static readonly AppDomain appDomain;
+        [NonSerialized]
+        private static readonly AssemblyBuilder assemblyBuilder;
+        [NonSerialized]
+        private static readonly ModuleBuilder moduleBuilder;
 
+        static LibraryInterfaceMapper()
+        {
+            appDomain = AppDomain.CurrentDomain;
+            assemblyBuilder = appDomain.DefineDynamicAssembly(new AssemblyName("DynamicInterfaces"), AssemblyBuilderAccess.Run);
+            moduleBuilder = assemblyBuilder.DefineDynamicModule("InterfaceMapping");
+        }
+
+        /// <summary>
+        /// Creates an instance of a LibraryInterfaceMapper using the specified builder.
+        /// </summary>
+        /// <param name="delegateBuilder"></param>
+        /// <param name="ctorBuilder"></param>
+        /// <param name="methodWrapper"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <see paramref="delegateBuilder"/>, <see paramref="ctorBuilder"/> or <see paramref="methodWrapper"/> is null.</exception>
         public LibraryInterfaceMapper(IDelegateTypeBuilder delegateBuilder, IConstructorBuilder ctorBuilder, IMethodCallWrapper methodWrapper)
         {
+            
             if(delegateBuilder == null)
                 throw new ArgumentNullException("delegateBuilder");
 
@@ -31,12 +66,10 @@ namespace Platform.Invoke
             if(methodWrapper == null)
                 throw new ArgumentNullException("methodWrapper");
 
+
             this.constructorBuilder = ctorBuilder;
             this.delegateBuilder = delegateBuilder;
-            AssemblyBuilder assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("DynamicInterfaces"),
-                AssemblyBuilderAccess.Run);
-
-            moduleBuilder = assemblyBuilder.DefineDynamicModule("InterfaceMapping");
+            
             this.methodWrapper = methodWrapper;
         }
 
@@ -55,7 +88,7 @@ namespace Platform.Invoke
         /// <param name="additionalConstructorArguments">Additional constructor arguments may be required by special constructor builders (such as <see cref="ProbingConstructorBuilder"/>).</param>
         /// <returns>Instance of the interface implementation.</returns>
         /// <exception cref="ArgumentException">Thrown if TInterface is not an interface of abstract class.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <see cref="library"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <see paramref="library"/> is null.</exception>
         /// <exception cref="MissingMethodException">Thrown if the specified method could not be located by the library.</exception>
         public TInterface Implement<TInterface>(ILibrary library, params object[] additionalConstructorArguments)
             where TInterface : class

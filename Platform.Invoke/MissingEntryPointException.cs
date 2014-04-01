@@ -26,6 +26,11 @@ namespace Platform.Invoke
             LibraryName = info.GetString("LibraryName");
         }
 
+        /// <summary>
+        /// Creates an instance of an exception describing a missing entry point.
+        /// </summary>
+        /// <param name="entryPoint"></param>
+        /// <param name="library"></param>
         public MissingEntryPointException(string entryPoint, ILibrary library)
             : base(string.Format("The entry point '{0}' could not be found in the library '{1}'.", entryPoint, library != null ? library.Name : null))
         {

@@ -22,8 +22,8 @@ namespace Platform.Invoke
             if(platform == PlatformID.Win32NT)
                 return new WindowsLibraryLoader();
 
-            //if(platform == PlatformID.MacOSX || platform == PlatformID.Unix)
-                //return new UnixLibraryLoader();
+            if(platform == PlatformID.MacOSX || platform == PlatformID.Unix)
+                return new UnixLibraryLoader();
 
             throw new PlatformNotSupportedException();
         }

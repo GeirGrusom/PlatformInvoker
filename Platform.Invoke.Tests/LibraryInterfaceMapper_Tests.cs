@@ -13,10 +13,16 @@ namespace Platform.Invoke.Tests
     [TestFixture]
     public class LibraryInterfaceMapper_Tests
     {
-        public interface IFoo
+        public interface IDoFoo
         {
             string DoFoo();
         }
+
+        public interface IDoFoo2
+        {
+            string DoFoo();
+        }
+
 
         private static string HelloWorld()
         {
@@ -90,7 +96,7 @@ namespace Platform.Invoke.Tests
 
 
             // Act
-            var result = lib.Implement<IFoo>(mockLibrary);
+            var result = lib.Implement<IDoFoo2>(mockLibrary);
 
             // Assert
             Assert.IsTrue(mockLibrary.Received);
@@ -110,7 +116,7 @@ namespace Platform.Invoke.Tests
 
             // Act
             // Assert
-            var ex = Assert.Throws<MissingEntryPointException>(() => lib.Implement<IFoo>(mockLibrary));
+            var ex = Assert.Throws<MissingEntryPointException>(() => lib.Implement<IDoFoo>(mockLibrary));
 
             Assert.AreEqual("DoFoo", ex.EntryPoint);
             Assert.AreEqual("FooLib", ex.LibraryName);

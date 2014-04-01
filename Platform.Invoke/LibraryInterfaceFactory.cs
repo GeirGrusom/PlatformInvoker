@@ -27,6 +27,9 @@ namespace Platform.Invoke
         }
     }
 
+    /// <summary>
+    /// Provides functionality for building library mappers.
+    /// </summary>
     public class LibraryInterfaceFactory
     {
 
@@ -37,8 +40,8 @@ namespace Platform.Invoke
         /// <param name="library">Library to retrieve methods from.</param>
         /// <param name="lookupFunctionName">Function name transformation. Leaving this field as null will use the method name verbatim.</param>
         /// <returns>Implementation of the interface with all methods implemented.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <see cref="library"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if TInterface is not an interface type.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <see paramref="library"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <typeparamref name="TInterface"/> is not an interface type.</exception>
         [Pure]
         public static TInterface Implement<TInterface>(ILibrary library, Func<string, string> lookupFunctionName = null )
             where TInterface : class
@@ -60,7 +63,7 @@ namespace Platform.Invoke
         /// <param name="probe">Probe invoked before and after method invocations.</param>
         /// <param name="lookupFunctionName">Function name transformation. Leaving this field as null will use the method name verbatim.</param>
         /// <returns>Implementation of the interface with probing invoked between calls.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <see cref="library"/> or <see cref="probe"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <see paramref="library"/> or <see paramref="probe"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if TInterface is not an interface type.</exception>
         [Pure]
         public static TInterface Implement<TInterface>(ILibrary library, IMethodCallProbe<TInterface> probe, Func<string, string> lookupFunctionName = null)
@@ -85,7 +88,7 @@ namespace Platform.Invoke
         /// <param name="onEnd">Method to call after a method is invoked.</param>
         /// <param name="lookupFunctionName">Function name transformation. Leaving this field as null will use the method name verbatim.</param>
         /// <returns>Implementation of the interface with probing methods invoked between calls.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <see cref="library"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <see paramref="library"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if TInterface is not an interface type.</exception>
         [Pure]
         public static TInterface Implement<TInterface>(ILibrary library, Action<MethodInfo, TInterface> onBegin, Action<MethodInfo, TInterface> onEnd, Func<string, string> lookupFunctionName = null)
@@ -99,7 +102,7 @@ namespace Platform.Invoke
         /// <typeparam name="TInterface">Interface to implement using the specified library.</typeparam>
         /// <param name="lookupFunctionName">Function name transformation. Leaving this field as null will use the method name verbatim.</param>
         /// <returns>Implementation of the interface with all methods implemented.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if <see cref="TInterface"/> does not have a LibraryAttribute defined.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if <see typeparamref="TInterface"/> does not have a LibraryAttribute defined.</exception>
         /// <exception cref="ArgumentException">Thrown if TInterface is not an interface type.</exception>
         [Pure]
         public static TInterface Implement<TInterface>(Func<string, string> lookupFunctionName = null)
@@ -118,8 +121,8 @@ namespace Platform.Invoke
         /// <param name="probe">Probe invoked before and after method invocations.</param>
         /// <param name="lookupFunctionName">Function name transformation. Leaving this field as null will use the method name verbatim.</param>
         /// <returns>Implementation of the interface with probing invoked between calls.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if <see cref="TInterface"/> does not have a LibraryAttribute defined.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <see cref="probe"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if <see typeparamref="TInterface"/> does not have a LibraryAttribute defined.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <see paramref="probe"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if TInterface is not an interface type.</exception>
         [Pure]
         public static TInterface Implement<TInterface>(IMethodCallProbe<TInterface> probe, Func<string, string> lookupFunctionName = null)
@@ -140,7 +143,7 @@ namespace Platform.Invoke
         /// <param name="onEnd">Method to call after a method is invoked. Can be null.</param>
         /// <param name="lookupFunctionName">Function name transformation. Leaving this field as null will use the method name verbatim.</param>
         /// <returns>Implementation of the interface with probing methods invoked between calls.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if <see cref="TInterface"/> does not have a LibraryAttribute defined.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if <see typeparamref="TInterface"/> does not have a LibraryAttribute defined.</exception>
         /// <exception cref="ArgumentException">Thrown if TInterface is not an interface type.</exception>
         [Pure]
         public static TInterface Implement<TInterface>(Action<MethodInfo, TInterface> onBegin, Action<MethodInfo, TInterface> onEnd, Func<string, string> lookupFunctionName = null)
@@ -159,7 +162,7 @@ namespace Platform.Invoke
         /// <param name="library">Library to retrieve methods from.</param>
         /// <param name="lookupFunctionName">Function name transformation. Leaving this field as null will use the method name verbatim.</param>
         /// <returns>Implementation of the interface with all methods implemented.</returns>
-        /// <exception cref="DllNotFoundException">Thrown if <see cref="library"/> could not be loaded.</exception>
+        /// <exception cref="DllNotFoundException">Thrown if <see paramref="library"/> could not be loaded.</exception>
         /// <exception cref="ArgumentException">Thrown if TInterface is not an interface type.</exception>
         [Pure]
         public static TInterface Implement<TInterface>(string library, Func<string, string> lookupFunctionName = null)
@@ -181,7 +184,7 @@ namespace Platform.Invoke
         /// <param name="lookupFunctionName">Function name transformation. Leaving this field as null will use the method name verbatim.</param>
         /// <returns>Implementation of the interface with probing invoked between calls.</returns>
         /// <exception cref="ArgumentException">Thrown if TInterface is not an interface type.</exception>
-        /// <exception cref="DllNotFoundException">Thrown if <see cref="library"/> could not be loaded.</exception>
+        /// <exception cref="DllNotFoundException">Thrown if <see paramref="library"/> could not be loaded.</exception>
         [Pure]
         public static TInterface Implement<TInterface>(string library, IMethodCallProbe<TInterface> probe, Func<string, string> lookupFunctionName = null)
             where TInterface : class
@@ -202,7 +205,7 @@ namespace Platform.Invoke
         /// <param name="lookupFunctionName">Function name transformation. Leaving this field as null will use the method name verbatim.</param>
         /// <returns>Implementation of the interface with probing methods invoked between calls.</returns>
         /// <exception cref="ArgumentException">Thrown if TInterface is not an interface type.</exception>
-        /// <exception cref="DllNotFoundException">Thrown if <see cref="library"/> could not be loaded.</exception>
+        /// <exception cref="DllNotFoundException">Thrown if <see paramref="library"/> could not be loaded.</exception>
         [Pure]
         public static TInterface Implement<TInterface>(string library, Action<MethodInfo, TInterface> onBegin, Action<MethodInfo, TInterface> onEnd, Func<string, string> lookupFunctionName = null)
             where TInterface : class

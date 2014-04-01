@@ -9,9 +9,22 @@ using Platform.Invoke.Attributes;
 
 namespace Platform.Invoke
 {
+    /// <summary>
+    /// Provides an interface for constructor builder implementers.
+    /// </summary>
     public interface IConstructorBuilder
     {
-        ConstructorBuilder GenerateConstructor(TypeBuilder owner, Type interfaceType,
+        /// <summary>
+        /// Generates the constructor using the specified arguments.
+        /// </summary>
+        /// <param name="owner">Constructor owner type</param>
+        /// <param name="interfaceType">Type of interface implemented by <see paramref="owner"/>.</param>
+        /// <param name="methods">Methods defined by <see paramref="owner"/> that exposes the functions defined by <see paramref="interfaceType"/>.</param>
+        /// <param name="fields">Internal fields for function delegates defined by <see paramref="owner"/>.</param>
+        /// <returns><see cref="ConstructorBuilder"/> for the specified <see paramref="owner"/>.</returns>
+        ConstructorBuilder GenerateConstructor(
+            TypeBuilder owner, 
+            Type interfaceType,
             IEnumerable<MethodInfo> methods,
             IEnumerable<FieldBuilder> fields);
     }
@@ -33,7 +46,12 @@ namespace Platform.Invoke
             this.lookupFunctionName = lookupFunctionName;
         }
 
-
+        /// <summary>
+        /// Creates the constructor builder.
+        /// </summary>
+        /// <param name="owner">Owner type to create constructor for.</param>
+        /// <param name="interfaceType"></param>
+        /// <returns><see cref="ConstructorBuilder" /> specified in <see paramref="owner"/>.</returns>
         protected virtual ConstructorBuilder DefineConstructor(TypeBuilder owner, Type interfaceType)
         {
             return owner.DefineConstructor(
