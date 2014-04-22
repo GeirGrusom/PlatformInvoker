@@ -28,84 +28,88 @@ Open issues
 
 Example
 =======
-    using System;
-    using Platform.Invoke;
+```csharp
+using System;
+using Platform.Invoke;
 
-    namespace Example
+namespace Example
+{
+    public interface IMessageBox
     {
-        public interface IMessageBox
-        {
-            int MessageBox(IntPtr hWnd, string lpText, string lpCaption, uint uType);
-        }
+        int MessageBox(IntPtr hWnd, string lpText, string lpCaption, uint uType);
+    }
 
-        public class Program
+    public class Program
+    {
+        static void Main()
         {
-            static void Main()
-            {
-                var msg = LibraryInterfaceFactory.Implement<IMessageBox>("user32", s => s + "A");
-                msg.MessageBox(IntPtr.Zero, "Hello World!", "Hello World!", 1);
-            }
+            var msg = LibraryInterfaceFactory.Implement<IMessageBox>("user32", s => s + "A");
+            msg.MessageBox(IntPtr.Zero, "Hello World!", "Hello World!", 1);
         }
     }
-    
+}
+```
+
 Notice the the second argument which appends "A" to all function
 call mappings in User32 in reference to the second issue.
 
 Example with probing and attributes
 ===================================
 
-    using System;
-    using System.Reflection;
+```csharp
+using System;
+using System.Reflection;
 
-    using Platform.Invoke;
-    using Platform.Invoke.Attributes;
+using Platform.Invoke;
+using Platform.Invoke.Attributes;
 
-    namespace Example
+namespace Example
+{
+    public enum ErrorCode : uint
     {
-        public enum ErrorCode : uint
+        NoError = 0,
+        InvalidOperation = 0x0502,
+    }
+
+    [Library("opengl32")]
+    [EntryPointFormat("gl{0}")]
+    public interface IOpenGL
+    {
+        [SkipProbe] // Don't invoke probe actions on this method. It would cause infinite recursion.
+        ErrorCode GetError();
+
+        void ClearColor (float red, float green, float blue, float alpha);
+    }
+
+    public class Program
+    {
+        static void BeginCall(MethodInfo method, IOpenGL gl)
         {
-            NoError = 0,
-            InvalidOperation = 0x0502,
+            gl.GetError(); // Clear last error state
         }
 
-        [Library("opengl32")]
-        [EntryPointFormat("gl{0}")]
-        public interface IOpenGL
+        static void EndCall(MethodInfo method, IOpenGL gl)
         {
-            [SkipProbe] // Don't invoke probe actions on this method. It would cause infinite recursion.
-            ErrorCode GetError();
-
-            void ClearColor (float red, float green, float blue, float alpha);
+            var error = gl.GetError();
+            if(error == ErrorCode.InvalidOperation)
+                throw new InvalidOperationException();
         }
 
-        public class Program
+
+        private static void Main()
         {
-            static void BeginCall(MethodInfo method, IOpenGL gl)
+            var opengl = LibraryInterfaceFactory.Implement<IOpenGL>(BeginCall, EndCall);
+            try
             {
-                gl.GetError(); // Clear last error state
+                opengl.ClearColor(0, 0, 0, 1);
+                Console.WriteLine("Should have thrown InvalidOperationException since there is no context bound...");
             }
-
-            static void EndCall(MethodInfo method, IOpenGL gl)
+            catch (InvalidOperationException)
             {
-                var error = gl.GetError();
-                if(error == ErrorCode.InvalidOperation)
-                    throw new InvalidOperationException();
-            }
-
-
-            private static void Main()
-            {
-                var opengl = LibraryInterfaceFactory.Implement<IOpenGL>(BeginCall, EndCall);
-                try
-                {
-                    opengl.ClearColor(0, 0, 0, 1);
-                    Console.WriteLine("Should have thrown InvalidOperationException since there is no context bound...");
-                }
-                catch (InvalidOperationException)
-                {
-                    Console.WriteLine("Expected exception :D");
-                }
+                Console.WriteLine("Expected exception :D");
             }
         }
     }
+}
+```
 
