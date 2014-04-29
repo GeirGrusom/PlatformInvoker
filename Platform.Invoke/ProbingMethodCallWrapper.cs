@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Platform.Invoke.Attributes;
@@ -30,7 +31,7 @@ namespace Platform.Invoke
         /// <param name="interfaceMethod"></param>
         protected override void OnInvokeBegin(TypeBuilder type, Type interfaceType, ILGenerator generator, MethodInfo interfaceMethod)
         {
-            var skip = interfaceMethod.GetCustomAttribute<SkipProbeAttribute>();
+            var skip = interfaceMethod.GetCustomAttributes(typeof(SkipProbeAttribute), false).OfType<SkipProbeAttribute>().FirstOrDefault();
             if (skip != null && (skip.SkipActions & ProbeActions.Begin) == ProbeActions.Begin)
                 return;
 
@@ -55,7 +56,7 @@ namespace Platform.Invoke
         /// <param name="interfaceMethod"></param>
         protected override void OnInvokeEnd(TypeBuilder type, Type interfaceType, ILGenerator generator, MethodInfo interfaceMethod)
         {
-            var skip = interfaceMethod.GetCustomAttribute<SkipProbeAttribute>();
+            var skip = interfaceMethod.GetCustomAttributes(typeof(SkipProbeAttribute), false).OfType<SkipProbeAttribute>().FirstOrDefault();
             if ( skip != null && (skip.SkipActions & ProbeActions.End) == ProbeActions.End)
                 return;
 

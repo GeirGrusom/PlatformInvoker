@@ -111,7 +111,7 @@ namespace Platform.Invoke
             {
                 generator.BeginScope();
 
-                var entryPoint = method.GetCustomAttribute<EntryPointAttribute>();
+                var entryPoint = method.GetCustomAttributes(typeof(EntryPointAttribute), false).OfType<EntryPointAttribute>().FirstOrDefault();
 
                 string methodName;
                 if (entryPoint != null)
@@ -124,7 +124,7 @@ namespace Platform.Invoke
                 }
                 else
                 {
-                    var libAttrib = interfaceType.GetCustomAttribute<EntryPointFormatAttribute>();
+                    var libAttrib = interfaceType.GetCustomAttributes(typeof(EntryPointFormatAttribute), false).OfType<EntryPointFormatAttribute>().FirstOrDefault();
                     if (libAttrib != null && !string.IsNullOrEmpty(libAttrib.Format))
                         methodName = string.Format(libAttrib.Format, method.Name);
                     else

@@ -7,12 +7,13 @@ namespace Platform.Invoke
     {
         public bool Equals(CustomAttributeNamedArgument x, CustomAttributeNamedArgument y)
         {
-            return x.MemberName == y.MemberName;
+            return x.MemberInfo.Name == y.MemberInfo.Name;
         }
 
         public int GetHashCode(CustomAttributeNamedArgument obj)
         {
-            return obj.MemberName.GetHashCode();
+            
+            return obj.MemberInfo.Name.GetHashCode();
         }
     }
 }
