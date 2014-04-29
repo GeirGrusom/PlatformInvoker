@@ -83,7 +83,7 @@ namespace Platform.Invoke
         /// <param name="parameter"></param>
         private static void CopyParameterAttributes(ParameterBuilder builder, ParameterInfo parameter)
         {
-            foreach (var attrib in parameter.CustomAttributes)
+            foreach (var attrib in parameter.GetCustomAttributesData()) //.CustomAttributes)
             {
                 if (attrib.NamedArguments == null || attrib.NamedArguments.Count == 0)
                     continue;
@@ -96,16 +96,16 @@ namespace Platform.Invoke
                 var attribBuilder = new CustomAttributeBuilder(
                     attrib.Constructor,
                     attrib.ConstructorArguments.Select(a => a.Value).ToArray(),
-                    attrib.NamedArguments.Where(a => !a.IsField)
+                    attrib.NamedArguments.Where(a =>  a.MemberInfo.MemberType != MemberTypes.Field)
                         .Select(s => s.MemberInfo)
                         .OfType<PropertyInfo>()
                         .ToArray(),
-                    attrib.NamedArguments.Where(a => !a.IsField)
+                    attrib.NamedArguments.Where(a => a.MemberInfo.MemberType != MemberTypes.Field)
                         .Select(s => s.TypedValue)
                         .Select(s => s.Value)
                         .ToArray(),
-                    namedArguments.Where(a => a.IsField).Select(s => s.MemberInfo).OfType<FieldInfo>().ToArray(),
-                    namedArguments.Where(a => a.IsField).Select(s => s.TypedValue).Select(s => s.Value).ToArray());
+                    namedArguments.Where(a => a.MemberInfo.MemberType == MemberTypes.Field).Select(s => s.MemberInfo).OfType<FieldInfo>().ToArray(),
+                    namedArguments.Where(a => a.MemberInfo.MemberType == MemberTypes.Field).Select(s => s.TypedValue).Select(s => s.Value).ToArray());
                 
                 builder.SetCustomAttribute(attribBuilder);
             }
@@ -119,9 +119,9 @@ namespace Platform.Invoke
         private static IEnumerable<CustomAttributeNamedArgument> FixMarshalTypeAttributes(
             IList<CustomAttributeNamedArgument> namedArguments)
         {
-            if (namedArguments.Any(f => f.MemberName == "MarshalTypeRef") && namedArguments.Any(f => f.MemberName == "MarshalType"))
+            if (namedArguments.Any(f => f.MemberInfo.Name == "MarshalTypeRef") && namedArguments.Any(f => f.MemberInfo.Name == "MarshalType"))
             {
-                return namedArguments.Except(namedArguments.Where(f => f.MemberName == "MarshalType"),
+                return namedArguments.Except(namedArguments.Where(f => f.MemberInfo.Name == "MarshalType"),
                     new CustomAttributeNamedArgumentComparer()).ToArray();
             }
             return namedArguments;

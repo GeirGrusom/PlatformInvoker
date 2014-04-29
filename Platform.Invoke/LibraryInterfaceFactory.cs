@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Reflection;
 
 using Platform.Invoke.Attributes;
@@ -19,7 +20,7 @@ namespace Platform.Invoke
             var type = typeof(TInterface);
             if(!type.IsInterface)
                 throw new NotSupportedException("Only interfaces are supported at this point.");
-            var attrib = type.GetCustomAttribute<LibraryAttribute>();
+            var attrib = type.GetCustomAttributes(typeof(LibraryAttribute), true).OfType<LibraryAttribute>().FirstOrDefault();
             if(attrib == null)
                 throw new InvalidOperationException(string.Format("Interface '{0}' is missing LibraryAttribute.", type.Name));
 
@@ -108,7 +109,7 @@ namespace Platform.Invoke
         public static TInterface Implement<TInterface>(Func<string, string> lookupFunctionName = null)
             where TInterface : class
         {
-            var libattrib = typeof(TInterface).GetCustomAttribute<LibraryAttribute>();
+            var libattrib = typeof(TInterface).GetCustomAttributes(typeof(LibraryAttribute), true).OfType<LibraryAttribute>().FirstOrDefault();
             if(libattrib == null)
                 throw new InvalidOperationException(string.Format("The type '{0}' is missing a LibraryAttribute.", typeof(TInterface).Name));
             return Implement<TInterface>(libattrib.Name, lookupFunctionName);
@@ -128,7 +129,7 @@ namespace Platform.Invoke
         public static TInterface Implement<TInterface>(IMethodCallProbe<TInterface> probe, Func<string, string> lookupFunctionName = null)
             where TInterface : class
         {
-            var libattrib = typeof(TInterface).GetCustomAttribute<LibraryAttribute>();
+            var libattrib = typeof(TInterface).GetCustomAttributes(typeof(LibraryAttribute), true).OfType<LibraryAttribute>().FirstOrDefault();
             if (libattrib == null)
                 throw new InvalidOperationException(string.Format("The type '{0}' is missing a LibraryAttribute.", typeof(TInterface).Name));
             return Implement(libattrib.Name, probe, lookupFunctionName);
@@ -149,7 +150,7 @@ namespace Platform.Invoke
         public static TInterface Implement<TInterface>(Action<MethodInfo, TInterface> onBegin, Action<MethodInfo, TInterface> onEnd, Func<string, string> lookupFunctionName = null)
             where TInterface : class
         {
-            var libattrib = typeof(TInterface).GetCustomAttribute<LibraryAttribute>();
+            var libattrib = typeof(TInterface).GetCustomAttributes(typeof(LibraryAttribute), true).OfType<LibraryAttribute>().FirstOrDefault();
             if (libattrib == null)
                 throw new InvalidOperationException(string.Format("The type '{0}' is missing a LibraryAttribute.", typeof(TInterface).Name));
             return Implement(libattrib.Name, new ProcProbe<TInterface>(onBegin, onEnd), lookupFunctionName);
