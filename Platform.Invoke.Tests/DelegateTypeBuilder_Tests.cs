@@ -101,6 +101,20 @@ namespace Platform.Invoke.Tests
         }
 
         [Test]
+        public void CreateDelegateType_AddsArgumentTypeNamesInDelegateName_Ok()
+        {
+            // Arrange
+            var builder = new DelegateTypeBuilder();
+
+            // Act
+            var type = builder.CreateDelegateType(typeof(IDelegateFoo).GetMethod("FooMethod_String_StringIsIn"), ModuleBuilder);
+            var method = type.GetMethod("Invoke");
+
+            // Assert
+            Assert.AreEqual("FooMethod_String_StringIsIn_String_Proc", type.Name);
+        }
+
+        [Test]
         public void CreateDelegateType_StringReturnType_OneStringParametersWithIn_CopiesAttributes()
         {
             // Arrange

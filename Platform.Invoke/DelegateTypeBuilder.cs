@@ -38,7 +38,7 @@ namespace Platform.Invoke
         [Pure]
         public Type CreateDelegateType(MethodInfo method, ModuleBuilder module)
         {
-            var name = string.Format("{0}Proc", method.Name);
+            var name = string.Format("{0}_{1}_Proc", method.Name, string.Join("_", method.GetParameters().Select(p => p.ParameterType.Name)));
 
             var oldType = module.GetType(name);
             if (oldType != null)
