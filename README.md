@@ -16,42 +16,34 @@ What does it support?
   libraries.
 * Marshal attributes still work.
 * Both 32-bit and 64-bit is supported.
-* Unix support on Mono
-* Implementation uses ILibrary, so you can even use libraries that
-  implements extension functionality such as OpenGL or OpenAL.
-
-Open issues
-===========
-* The default marshalling for strings is Ansi. 
-* Be aware that the Windows API postfix Ansi functions with A 
-  and Unicode with W.
+* Unix support on Mono and .NET Core
+* Can support libraries that implement extension systems like OpenAL and OpenGL by implementing
+  ILibrary.
 
 Example
 =======
 ```csharp
 using System;
 using Platform.Invoke;
+using System.Runtime.InteropServices;
 
 namespace Example
 {
     public interface IMessageBox
     {
-        int MessageBox(IntPtr hWnd, string lpText, string lpCaption, uint uType);
+        int MessageBox(IntPtr hWnd, [In]string lpText, [In]string lpCaption, uint uType);
     }
 
     public class Program
     {
         static void Main()
         {
-            var msg = LibraryInterfaceFactory.Implement<IMessageBox>("user32", s => s + "A");
+            var msg = LibraryInterfaceFactory.Implement<IMessageBox>("user32");
             msg.MessageBox(IntPtr.Zero, "Hello World!", "Hello World!", 1);
         }
     }
 }
 ```
-
-Notice the the second argument which appends "A" to all function
-call mappings in User32 in reference to the second issue.
 
 Example with probing and attributes
 ===================================
