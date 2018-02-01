@@ -5,6 +5,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 
 namespace Platform.Invoke
 {
@@ -73,7 +74,7 @@ namespace Platform.Invoke
                 CopyParameterAttributes(par, param);
             }
 
-            return typeBuilder.CreateType();
+            return typeBuilder.CreateTypeInfo();
         }
 
         /// <summary>
@@ -96,7 +97,7 @@ namespace Platform.Invoke
                 var attribBuilder = new CustomAttributeBuilder(
                     attrib.Constructor,
                     attrib.ConstructorArguments.Select(a => a.Value).ToArray(),
-                    attrib.NamedArguments.Where(a =>  a.MemberInfo.MemberType != MemberTypes.Field)
+                    attrib.NamedArguments.Where(a => a.MemberInfo.MemberType != MemberTypes.Field)
                         .Select(s => s.MemberInfo)
                         .OfType<PropertyInfo>()
                         .ToArray(),
@@ -106,7 +107,7 @@ namespace Platform.Invoke
                         .ToArray(),
                     namedArguments.Where(a => a.MemberInfo.MemberType == MemberTypes.Field).Select(s => s.MemberInfo).OfType<FieldInfo>().ToArray(),
                     namedArguments.Where(a => a.MemberInfo.MemberType == MemberTypes.Field).Select(s => s.TypedValue).Select(s => s.Value).ToArray());
-                
+
                 builder.SetCustomAttribute(attribBuilder);
             }
         }
@@ -116,13 +117,13 @@ namespace Platform.Invoke
         /// </summary>
         /// <param name="namedArguments"></param>
         /// <returns></returns>
-        private static IEnumerable<CustomAttributeNamedArgument> FixMarshalTypeAttributes(
+        private static IList<CustomAttributeNamedArgument> FixMarshalTypeAttributes(
             IList<CustomAttributeNamedArgument> namedArguments)
         {
-            if (namedArguments.Any(f => f.MemberInfo.Name == "MarshalTypeRef") && namedArguments.Any(f => f.MemberInfo.Name == "MarshalType"))
+            if (namedArguments.Any(f => f.MemberInfo.Name == nameof(MarshalAsAttribute.MarshalTypeRef)) && namedArguments.Any(f => f.MemberInfo.Name == nameof(MarshalAsAttribute.MarshalType)))
             {
-                return namedArguments.Except(namedArguments.Where(f => f.MemberInfo.Name == "MarshalType"),
-                    new CustomAttributeNamedArgumentComparer()).ToArray();
+                return namedArguments.Except(namedArguments.Where(f => f.MemberInfo.Name == nameof(MarshalAsAttribute.MarshalType)),
+                    CustomAttributeNamedArgumentComparer.Instance).ToArray();
             }
             return namedArguments;
         }

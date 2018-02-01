@@ -19,7 +19,7 @@ namespace Platform.Invoke.Tests
             string FooMethod_String_StringIsIn([In] string foo);
 
             string FooMethod_String_StringWithCustomMarshal(
-                [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof (CustomMarshaller))] string foo);
+                [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(CustomMarshaller))] string foo);
         }
 
         public class CustomMarshaller : ICustomMarshaler
@@ -63,7 +63,7 @@ namespace Platform.Invoke.Tests
             var builder = new DelegateTypeBuilder();
 
             // Act
-            var type = builder.CreateDelegateType(typeof (IDelegateFoo).GetMethod("FooMethod"), ModuleBuilder);
+            var type = builder.CreateDelegateType(typeof(IDelegateFoo).GetMethod("FooMethod"), ModuleBuilder);
             var method = type.GetMethod("Invoke");
 
             // Assert

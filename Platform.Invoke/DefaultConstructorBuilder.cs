@@ -23,7 +23,7 @@ namespace Platform.Invoke
         /// <param name="fields">Internal fields for function delegates defined by <see paramref="owner"/>.</param>
         /// <returns><see cref="ConstructorBuilder"/> for the specified <see paramref="owner"/>.</returns>
         ConstructorBuilder GenerateConstructor(
-            TypeBuilder owner, 
+            TypeBuilder owner,
             Type interfaceType,
             IEnumerable<MethodInfo> methods,
             IEnumerable<FieldBuilder> fields);
@@ -69,7 +69,7 @@ namespace Platform.Invoke
         /// <param name="generator"></param>
         protected virtual void EmitBegin(TypeBuilder type, Type interfaceType, ILGenerator generator)
         {
-            
+
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Platform.Invoke
         /// <param name="generator"></param>
         protected virtual void EmitEnd(TypeBuilder type, Type interfaceType, ILGenerator generator)
         {
-            
+
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Platform.Invoke
             var builder = DefineConstructor(owner, interfaceType);
 
             var generator = builder.GetILGenerator();
-            
+
             var notSupportedConstructor = typeof(MissingEntryPointException).GetConstructor(
                 new[] { typeof(string), typeof(ILibrary) });
 
@@ -138,25 +138,25 @@ namespace Platform.Invoke
                 generator.Emit(OpCodes.Ldarg_1); // ILibrary
                 generator.Emit(OpCodes.Ldstr, methodName);  // load constant method name
 
-                var getMethod = typeof(ILibrary).GetMethod("GetProcedure", new[] { typeof(string) }).MakeGenericMethod(field.FieldType); // lib.GetProcedure<Field.FieldType>(methodName)
+                var getMethod = typeof(ILibrary).GetMethod(nameof(ILibrary.GetProcedure), new[] { typeof(string) }).MakeGenericMethod(field.FieldType); // lib.GetProcedure<Field.FieldType>(methodName)
                 generator.EmitCall(OpCodes.Callvirt, getMethod, null);
 
                 generator.Emit(OpCodes.Stloc, loc); // result = GetProcedure<DelegateType>(methodName);
-                
+
                 // if result == null throw MethodNotSupportedException
-                generator.Emit(OpCodes.Ldloc, loc); 
-                generator.Emit(OpCodes.Brtrue_S, okLabel); // if(result != null) goto okLabel
+                generator.Emit(OpCodes.Ldloc, loc);
+                generator.Emit(OpCodes.Brtrue, okLabel); // if(result != null) goto okLabel
                 generator.Emit(OpCodes.Ldstr, methodName);
                 generator.Emit(OpCodes.Ldarg_1);
                 generator.Emit(OpCodes.Newobj, notSupportedConstructor);
                 generator.Emit(OpCodes.Throw); // throw new MissingMethodException(methodName)
-                
+
                 generator.MarkLabel(okLabel);
                 // Everything went okay. Set the delegate to the returned function.
                 generator.Emit(OpCodes.Ldarg_0); // this
                 generator.Emit(OpCodes.Ldloc, loc); // result
                 generator.Emit(OpCodes.Stfld, field); // this._fieldName = result;
-                
+
                 generator.EndScope();
             }
 

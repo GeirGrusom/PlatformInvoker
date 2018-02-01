@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Platform.Invoke", "Platform.Invoke\Platform.Invoke.csproj", "{C1252B6F-D9DA-4737-AE76-9E5A92733933}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Platform.Invoke.Tests", "Platform.Invoke.Tests\Platform.Invoke.Tests.csproj", "{5447F070-CAE2-45E0-A35D-F92D92DFEFC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Platform.Invoke.CoreTests", "Platform.Invoke.CoreTests\Platform.Invoke.CoreTests.csproj", "{09CB40B2-56AB-477B-8F7C-4DD41043E7BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,8 +23,15 @@ Global
 		{5447F070-CAE2-45E0-A35D-F92D92DFEFC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5447F070-CAE2-45E0-A35D-F92D92DFEFC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5447F070-CAE2-45E0-A35D-F92D92DFEFC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09CB40B2-56AB-477B-8F7C-4DD41043E7BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09CB40B2-56AB-477B-8F7C-4DD41043E7BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09CB40B2-56AB-477B-8F7C-4DD41043E7BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09CB40B2-56AB-477B-8F7C-4DD41043E7BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3D9A4596-57D0-4A73-813D-FA515FB918AF}
 	EndGlobalSection
 EndGlobal

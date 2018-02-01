@@ -6,7 +6,7 @@ namespace Platform.Invoke.Attributes
     /// Defines a format for entry point lookup names in the library implementation.
     /// </summary>
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class)]
-    public class EntryPointFormatAttribute : Attribute
+    public sealed class EntryPointFormatAttribute : Attribute
     {
         /// <summary>
         /// Gets or sets the formatting to use for name lookups. Use {0} to specify method name.

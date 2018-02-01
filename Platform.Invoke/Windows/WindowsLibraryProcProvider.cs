@@ -50,9 +50,9 @@ namespace Platform.Invoke.Windows
             IntPtr result = GetProcAddress(module, procName);
             if (result == IntPtr.Zero)
             {
-                result = GetProcAddress(module, procName + "A");
+                result = GetProcAddress(module, procName + "W");
                 if (result == IntPtr.Zero)
-                    result = GetProcAddress(module, procName + "W");
+                    result = GetProcAddress(module, procName + "A");
             }
 
             return result;

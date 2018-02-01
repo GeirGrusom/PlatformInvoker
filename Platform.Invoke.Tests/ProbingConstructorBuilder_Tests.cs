@@ -24,7 +24,7 @@ namespace Platform.Invoke.Tests
             string Foo();
         }
 
-        [TestFixtureSetUp]
+        [SetUp]
         public void Setup()
         {
             assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("TestAssembly"),
@@ -37,7 +37,7 @@ namespace Platform.Invoke.Tests
         {
             // Arrange
             var type = module.DefineType("ConstructorType", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
-            
+
             var builder = new ProbingConstructorBuilder(null);
             var lib = Substitute.For<ILibrary>();
             var probe = Substitute.For<IMethodCallProbe<IFoo>>();

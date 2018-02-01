@@ -6,7 +6,7 @@ namespace Platform.Invoke.Attributes
     /// Explicitly states the library to use.
     /// </summary>
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class)]
-    public class LibraryAttribute : Attribute
+    public sealed class LibraryAttribute : Attribute
     {
         /// <summary>
         /// Gets or sets the name of the library to use.

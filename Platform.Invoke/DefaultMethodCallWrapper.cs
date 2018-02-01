@@ -36,7 +36,7 @@ namespace Platform.Invoke
         /// <param name="interfaceMethod"></param>
         protected virtual void OnInvokeBegin(TypeBuilder type, Type interfaceType, ILGenerator generator, MethodInfo interfaceMethod)
         {
-            
+
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Platform.Invoke
         /// <param name="interfaceMethod"></param>
         protected virtual void OnInvokeEnd(TypeBuilder type, Type interfaceType, ILGenerator generator, MethodInfo interfaceMethod)
         {
-            
+
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Platform.Invoke
             {
                 generator.Emit(OpCodes.Ldarg, item.Index + 1);
             }
-            
+
             generator.EmitCall(OpCodes.Callvirt, field.FieldType.GetMethod("Invoke"), null);
 
             OnInvokeEnd(owner, interfaceType, generator, overrideMethod);
@@ -93,6 +93,6 @@ namespace Platform.Invoke
             owner.DefineMethodOverride(result, overrideMethod);
 
             return result;
-        }    
+        }
     }
 }

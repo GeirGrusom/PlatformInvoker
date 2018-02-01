@@ -6,7 +6,7 @@ namespace Platform.Invoke.Attributes
     /// Explicitly defines the entry point to use for the method call.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class EntryPointAttribute : Attribute
+    public sealed class EntryPointAttribute : Attribute
     {
         /// <summary>
         /// Gets or sets the entry point name.

@@ -44,7 +44,7 @@ namespace Platform.Invoke.Tests
             string Foo();
         }
 
-        [TestFixtureSetUp]
+        [SetUp]
         public void Setup()
         {
             assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("TestAssembly"),
@@ -100,15 +100,15 @@ namespace Platform.Invoke.Tests
             var lib = Substitute.For<ILibrary>();
             lib.GetProcedure<Func<string>>("Foo").Returns(() => "Hello world!");
 
-            
+
             var f = type.DefineField("_Foo_", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
-            
+
             // Act
             var ctor = builder.GenerateConstructor(type, typeof(IFoo), typeof(IFoo).GetMethods(), new[] { f });
 
             // Assert
             var result = Activator.CreateInstance(type.CreateType(), lib);
-            
+
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.GetType().GetField("_Foo_", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(result));
         }
@@ -120,7 +120,7 @@ namespace Platform.Invoke.Tests
             var type = module.DefineType("ConstructorType_TwoArguments_Ok", TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.AutoLayout | TypeAttributes.Public);
             var builder = new DefaultConstructorBuilder(null);
             var lib = Substitute.For<ILibrary>();
-            
+
             lib.GetProcedure<Func<string>>("Foo").Returns(() => "Hello world!");
             lib.GetProcedure<Func<string>>("Bar").Returns(() => "Hello world!");
 
@@ -129,7 +129,7 @@ namespace Platform.Invoke.Tests
             var bar = type.DefineField("_Bar_", typeof(Func<string>), FieldAttributes.Private | FieldAttributes.InitOnly);
 
             // Act
-            var ctor = builder.GenerateConstructor(type,  typeof(IFooBar), typeof(IFooBar).GetMethods(), new[] { foo, bar });
+            var ctor = builder.GenerateConstructor(type, typeof(IFooBar), typeof(IFooBar).GetMethods(), new[] { foo, bar });
 
             // Assert
             var result = Activator.CreateInstance(type.CreateType(), lib);

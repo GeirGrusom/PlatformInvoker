@@ -34,7 +34,7 @@ namespace Platform.Invoke.Attributes
     /// Declares that this field should not invoke probe methods.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class SkipProbeAttribute : Attribute
+    public sealed class SkipProbeAttribute : Attribute
     {
         /// <summary>
         /// Actions to skip.

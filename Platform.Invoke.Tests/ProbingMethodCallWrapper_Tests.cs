@@ -20,7 +20,7 @@ namespace Platform.Invoke.Tests
             string Foo();
         }
 
-        [TestFixtureSetUp]
+        [SetUp]
         public void Setup()
         {
             assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("TestAssembly"),
@@ -50,7 +50,7 @@ namespace Platform.Invoke.Tests
             var resultType = type.CreateType();
             var result = Activator.CreateInstance(resultType);
             result.GetType().GetField("$probe", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result, probe);
-            result.GetType().GetField("_Foo_", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result, new Func<string>(Foo)); 
+            result.GetType().GetField("_Foo_", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result, new Func<string>(Foo));
 
             // Act
             string res = ((IFoo)result).Foo();

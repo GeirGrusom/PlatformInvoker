@@ -28,7 +28,7 @@ namespace Platform.Invoke.Tests
             string Foo_WithString(string arg);
         }
 
-        [TestFixtureSetUp]
+        [SetUp]
         public void Setup()
         {
             assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("TestAssembly"),
@@ -82,15 +82,15 @@ namespace Platform.Invoke.Tests
             // Arrange
             var wrapper = new DefaultMethodCallWrapper();
             var type = module.DefineType("TestType");
-            
+
             var fooMethod = typeof(IFoo).GetMethod("Foo");
-            
-            var field = type.DefineField("_Foo_", typeof (Func<string>), FieldAttributes.Public);
+
+            var field = type.DefineField("_Foo_", typeof(Func<string>), FieldAttributes.Public);
 
             // Act
-            wrapper.GenerateInvocation(type, typeof(IFoo), 
+            wrapper.GenerateInvocation(type, typeof(IFoo),
                 fooMethod,
-                new [] {field});
+                new[] { field });
 
             type.AddInterfaceImplementation(typeof(IFoo));
             var resultType = type.CreateType();

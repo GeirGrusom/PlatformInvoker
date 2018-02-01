@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Security.Policy;
 
 namespace Platform.Invoke
 {
@@ -28,13 +27,11 @@ namespace Platform.Invoke
     /// </summary>
     public sealed class LibraryInterfaceMapper : ILibraryInterfaceMapper
     {
-        
+
         private readonly IDelegateTypeBuilder delegateBuilder;
         private readonly IMethodCallWrapper methodWrapper;
         private readonly IConstructorBuilder constructorBuilder;
 
-        [NonSerialized]
-        private static readonly AppDomain appDomain;
         [NonSerialized]
         private static readonly AssemblyBuilder assemblyBuilder;
         [NonSerialized]
@@ -42,8 +39,7 @@ namespace Platform.Invoke
 
         static LibraryInterfaceMapper()
         {
-            appDomain = AppDomain.CurrentDomain;
-            assemblyBuilder = appDomain.DefineDynamicAssembly(new AssemblyName("DynamicInterfaces"), AssemblyBuilderAccess.Run);
+            assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("DynamicInterfaces"), AssemblyBuilderAccess.Run);
             moduleBuilder = assemblyBuilder.DefineDynamicModule("InterfaceMapping");
         }
 
@@ -56,20 +52,20 @@ namespace Platform.Invoke
         /// <exception cref="ArgumentNullException">Thrown if <see paramref="delegateBuilder"/>, <see paramref="ctorBuilder"/> or <see paramref="methodWrapper"/> is null.</exception>
         public LibraryInterfaceMapper(IDelegateTypeBuilder delegateBuilder, IConstructorBuilder ctorBuilder, IMethodCallWrapper methodWrapper)
         {
-            
-            if(delegateBuilder == null)
+
+            if (delegateBuilder == null)
                 throw new ArgumentNullException("delegateBuilder");
 
-            if(ctorBuilder == null)
+            if (ctorBuilder == null)
                 throw new ArgumentNullException("ctorBuilder");
 
-            if(methodWrapper == null)
+            if (methodWrapper == null)
                 throw new ArgumentNullException("methodWrapper");
 
 
             this.constructorBuilder = ctorBuilder;
             this.delegateBuilder = delegateBuilder;
-            
+
             this.methodWrapper = methodWrapper;
         }
 
@@ -94,14 +90,14 @@ namespace Platform.Invoke
             where TInterface : class
         {
             var type = typeof(TInterface);
-            if(!(type.IsInterface || type.IsAbstract))
+            if (!(type.IsInterface || type.IsAbstract))
                 throw new ArgumentException("TInterface must be a interface or abstract class.");
 
-            if(library == null)
+            if (library == null)
                 throw new ArgumentNullException("library");
 
             TypeBuilder definedType;
-            
+
             MethodInfo[] methods;
             if (type.IsInterface)
             {
@@ -129,12 +125,12 @@ namespace Platform.Invoke
             {
                 methodWrapper.GenerateInvocation(definedType, type, method, fields);
             }
-            
-            var result = definedType.CreateType();
+
+            var result = definedType.CreateTypeInfo();
 
             try
             {
-                return (TInterface) Activator.CreateInstance(result, new object[] {library}.Concat(additionalConstructorArguments).ToArray());
+                return (TInterface)Activator.CreateInstance(result, new object[] { library }.Concat(additionalConstructorArguments).ToArray());
             }
             catch (TargetInvocationException ex)
             {
@@ -147,8 +143,8 @@ namespace Platform.Invoke
         {
             return (from method in methods
                     let delegateType = delegateBuilder.CreateDelegateType(method, delegateModule)
-                    select builder.DefineField(GetFieldNameForMethodInfo(method), 
-                    delegateType, 
+                    select builder.DefineField(GetFieldNameForMethodInfo(method),
+                    delegateType,
                     FieldAttributes.Private | FieldAttributes.InitOnly)).ToList();
         }
 
