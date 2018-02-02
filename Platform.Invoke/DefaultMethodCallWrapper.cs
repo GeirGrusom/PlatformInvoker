@@ -51,6 +51,7 @@ namespace Platform.Invoke
 
         }
 
+
         /// <summary>
         /// Creates a <see cref="MethodBuilder"/> and implements a default wrapper.
         /// </summary>
@@ -61,27 +62,54 @@ namespace Platform.Invoke
         /// <returns>MethodBuilder with an already implemented wrapper.</returns>
         public MethodBuilder GenerateInvocation(TypeBuilder owner, Type interfaceType, MethodInfo overrideMethod, IEnumerable<FieldBuilder> fieldBuilders)
         {
+
+            Type[] MakeNullIfEmpty(Type[] input)
+            {
+                return input.Length == 0 ? null : input;
+            }
+
+            Type[][] MakeNullIfEmptyArray(Type[][] input)
+            {
+                return input.All(x => x == null) ? null : input;
+            }
+
+            var parameters = overrideMethod.GetParameters();
+            var parameterTypes = parameters.Select(t => t.ParameterType).ToArray();
+            var ret = overrideMethod.ReturnParameter;
+
+            var parameterTypeRequiredCustomModifiers = MakeNullIfEmptyArray(parameters.Select(x => MakeNullIfEmpty(x.GetRequiredCustomModifiers())).ToArray());
+            var parameterTypeOptionalCustomModifiers = MakeNullIfEmptyArray(parameters.Select(x => MakeNullIfEmpty(x.GetOptionalCustomModifiers())).ToArray());
+            var returnTypeRequiredCustomModifiers = MakeNullIfEmpty(ret.GetRequiredCustomModifiers());
+            var returnTypeOptionalCustomModifiers = MakeNullIfEmpty(ret.GetOptionalCustomModifiers());
+
             var result = owner.DefineMethod
                     (
-                        overrideMethod.Name,
-                        MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.Final |
+                        name: overrideMethod.Name,
+                        attributes: MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.Final |
                         MethodAttributes.HideBySig | MethodAttributes.NewSlot,
-                        overrideMethod.ReturnType,
-                        overrideMethod.GetParameters().OrderBy(p => p.Position).Select(t => t.ParameterType).ToArray()
+                        callingConvention: overrideMethod.CallingConvention,
+                        returnType: overrideMethod.ReturnType,
+                        returnTypeRequiredCustomModifiers: returnTypeRequiredCustomModifiers,
+                        returnTypeOptionalCustomModifiers: returnTypeOptionalCustomModifiers,
+                        parameterTypes: parameterTypes,
+                        parameterTypeRequiredCustomModifiers: parameterTypeRequiredCustomModifiers,
+                        parameterTypeOptionalCustomModifiers: parameterTypeOptionalCustomModifiers
                     );
 
+#if !NET35
             result.SetImplementationFlags(MethodImplAttributes.AggressiveInlining);
+#endif
 
             var generator = result.GetILGenerator();
             var fieldName = LibraryInterfaceMapper.GetFieldNameForMethodInfo(overrideMethod);
             var field = fieldBuilders.First(f => f.Name == fieldName);
-            var parameters = overrideMethod.GetParameters();
+
             OnInvokeBegin(owner, interfaceType, generator, overrideMethod);
             generator.Emit(OpCodes.Ldarg_0); //  this
             generator.Emit(OpCodes.Ldfld, field); // MethodNameProc _glMethodName. Initialized by constructor.
-            foreach (var item in parameters.Where(p => !p.IsRetval).Select((p, i) => new { Type = p, Index = i }))
+            foreach (var item in parameters.Where(p => !p.IsRetval))
             {
-                generator.Emit(OpCodes.Ldarg, item.Index + 1);
+                generator.Emit(OpCodes.Ldarg, item.Position + 1); // 0 is `this` so we skip it
             }
 
             generator.EmitCall(OpCodes.Callvirt, field.FieldType.GetMethod("Invoke"), null);

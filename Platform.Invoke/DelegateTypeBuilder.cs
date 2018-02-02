@@ -39,7 +39,12 @@ namespace Platform.Invoke
         [Pure]
         public Type CreateDelegateType(MethodInfo method, ModuleBuilder module)
         {
-            var name = string.Format("{0}_{1}_Proc", method.Name, string.Join("_", method.GetParameters().Select(p => p.ParameterType.Name)));
+#if NET35
+            var parameters = string.Join("_", method.GetParameters().Select(p => p.ParameterType.Name).ToArray());
+#else
+            var parameters = string.Join("_", method.GetParameters().Select(p => p.ParameterType.Name));
+#endif
+            var name = string.Format("{0}_{1}_Proc", method.Name, parameters);
 
             var oldType = module.GetType(name);
             if (oldType != null)
@@ -74,7 +79,11 @@ namespace Platform.Invoke
                 CopyParameterAttributes(par, param);
             }
 
+#if NET35
+            return typeBuilder.CreateType();
+#else
             return typeBuilder.CreateTypeInfo();
+#endif
         }
 
         /// <summary>
@@ -84,7 +93,13 @@ namespace Platform.Invoke
         /// <param name="parameter"></param>
         private static void CopyParameterAttributes(ParameterBuilder builder, ParameterInfo parameter)
         {
-            foreach (var attrib in parameter.GetCustomAttributesData()) //.CustomAttributes)
+#if NET35
+            var attribData = CustomAttributeData.GetCustomAttributes(parameter);
+#else
+            var attribData = parameter.GetCustomAttributesData();
+#endif
+
+            foreach (var attrib in attribData) //.CustomAttributes)
             {
                 if (attrib.NamedArguments == null || attrib.NamedArguments.Count == 0)
                     continue;

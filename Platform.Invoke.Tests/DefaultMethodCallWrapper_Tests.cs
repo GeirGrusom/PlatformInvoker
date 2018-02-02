@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Reflection.Emit;
-
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Platform.Invoke.Tests
@@ -22,6 +22,10 @@ namespace Platform.Invoke.Tests
             void Foo(out string result);
         }
 
+        public interface IInParameter
+        {
+            void Foo(in int value);
+        }
 
         public interface IFooWithString
         {
@@ -44,10 +48,39 @@ namespace Platform.Invoke.Tests
 
         public delegate void OutFoo(out string arg);
 
+        public delegate void InFoo(in int arg);
+
 
         public static void OutFooProc(out string arg)
         {
             arg = "Hello World!";
+        }
+
+        [Test]
+        public void GeneratorInvocation_InParameter_Ok()
+        {
+            // Arrange
+            var wrapper = new DefaultMethodCallWrapper();
+            var infoo = Substitute.For<InFoo>();
+            var type = module.DefineType(Guid.NewGuid().ToString());
+            type.AddInterfaceImplementation(typeof(IInParameter));
+            var fooString = typeof(IInParameter).GetMethod("Foo");
+
+            var field = type.DefineField("_Foo_Int32&", typeof(InFoo), FieldAttributes.Public);
+
+            // Act
+            var resultMethod = wrapper.GenerateInvocation(type, typeof(InFoo), fooString, new[] { field });
+
+            var resultType = type.CreateType();
+
+            // Assert
+
+            var obj = Activator.CreateInstance(resultType);
+            obj.GetType().GetField("_Foo_Int32&").SetValue(obj, infoo);
+            int result = 100;
+            ((IInParameter)obj).Foo(result);
+
+            infoo.Received().Invoke(result);
         }
 
         [Test]

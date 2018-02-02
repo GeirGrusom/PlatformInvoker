@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Platform.Invoke
 {
@@ -12,7 +9,7 @@ namespace Platform.Invoke
     /// </summary>
     public abstract class LibraryLoaderBase : ILibraryLoader
     {
-        private readonly Func<string, IntPtr> proc; 
+        private readonly Func<string, IntPtr> proc;
 
         /// <summary>
         /// Creates a library loader base with the specified loader procedure.
@@ -39,7 +36,7 @@ namespace Platform.Invoke
         [Pure]
         public ILibrary Load(string libraryName)
         {
-            if(libraryName == null)
+            if (libraryName == null)
                 throw new ArgumentNullException("libraryName");
 
             var moduleHandle = proc(libraryName);

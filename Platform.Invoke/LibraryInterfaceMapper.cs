@@ -39,7 +39,11 @@ namespace Platform.Invoke
 
         static LibraryInterfaceMapper()
         {
+#if NET35
+            assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DynamicInterfaces"), AssemblyBuilderAccess.Run);
+#else
             assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("DynamicInterfaces"), AssemblyBuilderAccess.Run);
+#endif
             moduleBuilder = assemblyBuilder.DefineDynamicModule("InterfaceMapping");
         }
 
@@ -126,7 +130,11 @@ namespace Platform.Invoke
                 methodWrapper.GenerateInvocation(definedType, type, method, fields);
             }
 
+#if NET35
+            var result = definedType.CreateType();
+#else
             var result = definedType.CreateTypeInfo();
+#endif
 
             try
             {
@@ -150,7 +158,12 @@ namespace Platform.Invoke
 
         internal static string GetFieldNameForMethodInfo(MethodInfo method)
         {
-            return string.Format("_{0}_{1}", method.Name, string.Join("_", method.GetParameters().Select(p => p.ParameterType.Name)));
+#if NET35
+            var parameters = method.GetParameters().Select(p => p.ParameterType.Name).ToArray();
+#else
+            var parameters = method.GetParameters().Select(p => p.ParameterType.Name);
+#endif
+            return string.Format("_{0}_{1}", method.Name, string.Join("_", parameters));
         }
     }
 }

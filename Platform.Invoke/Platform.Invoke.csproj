@@ -2,16 +2,30 @@
 
   <PropertyGroup>
 
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net45;net35</TargetFrameworks>
     <AssemblyName>Platform.Invoke</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Henning Moe</Authors>
     <Company />
+    <Title>Platform Invoke</Title>
     <Description>This library generates platform invoke implementations for interfaces.</Description>
     <Copyright>©2018 Henning Moe</Copyright>
     <PackageProjectUrl>https://github.com/GeirGrusom/PlatformInvoker</PackageProjectUrl>
     <PackageLicenseUrl>https://www.gnu.org/licenses/lgpl.html</PackageLicenseUrl>
-    <PackageReleaseNotes># 1.1.0 - Moved to .NET Standard and new project file, removed .NET 3.5 support.
+    <PackageReleaseNotes># 1.2.0 - Re-added .NET 3.5 support
+
+What's new:
+
+  * .NET 3.5 Support back in
+  * Added support for C# 7.2 `in` parameters
+  * Removed unrequired dependencies for .NET 4.5
+
+Breaking changes:
+ *  None that I'm aware of
+
+The 3.5 support was removed in the last version because it wasn't properly built before (it was more or less mashed in separately). Now it's part of the build process. Hopefully no one needs this, but it wasn't a lot of work to get it in because of the new csproj format.
+
+# 1.1.0 - Moved to .NET Standard and new project file, removed .NET 3.5 support.
 
 What's new:
 
@@ -37,16 +51,16 @@ Initial Release</PackageReleaseNotes>
 
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DocumentationFile>bin\Release\$(TargetFramework)\netstandard2.0\Platform.Invoke.xml</DocumentationFile>
+  </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="GitVersionTask" Version="4.0.0-beta0012">
       <PrivateAssets>all</PrivateAssets>
       
     </PackageReference>
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
   </ItemGroup>
 </Project>
